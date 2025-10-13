@@ -10,8 +10,84 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: LoginPage(),
       debugShowCheckedModeBanner: false,
+      home: WelcomePage(),
+    );
+  }
+}
+
+class WelcomePage extends StatelessWidget {
+  const WelcomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/gestra.png', 
+                height: 100,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "GESTRA",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromRGBO(30, 64, 175, 1),
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(height: 50),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                    );
+                  },
+                  child: const Text("Log In", style: TextStyle(fontSize: 18, color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 15),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegisterPage()),
+                    );
+                  },
+                  child: const Text("Sign Up", style: TextStyle(fontSize: 18, color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -21,86 +97,115 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController userController = TextEditingController();
+    final TextEditingController nameController = TextEditingController();
     final TextEditingController passController = TextEditingController();
+
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.home, size: 80, color: Colors.blueAccent),
-              const SizedBox(height: 10),
-              const Text(
-                "Selamat Datang di Gestra",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 8)],
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Image.asset('assets/images/gestra.png', height: 80),
+                const SizedBox(height: 20),
+                const Text(
+                  "Welcome back",
+                  style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
-                child: Column(
+                const SizedBox(height: 30),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: "Name",
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: passController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      "Forget password?",
+                      style: TextStyle(color: Color.fromRGBO(30, 64, 175, 1)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const UnderConstruction()),
+                      );
+                    },
+                    child: const Text(
+                      "Log in",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextField(
-                      controller: userController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextField(
-                      controller: passController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () {
+                    const Text("Don’t have an account? "),
+                    GestureDetector(
+                      onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const UnderConstruction()),
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterPage()),
                         );
                       },
-                      child: const Text('Login'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const RegisterPage()),
-                        );
-                      },
-                      child: const Text("Belum punya akun? Daftar di sini"),
+                      child: const Text(
+                        "Sign Up",
+                        style: TextStyle(color: Color.fromRGBO(30, 64, 175, 1)),
+                      ),
                     ),
                   ],
-                ),
-              ),
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -113,73 +218,112 @@ class RegisterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController userController = TextEditingController();
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
     final TextEditingController passController = TextEditingController();
+
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.home, size: 80, color: Colors.blue),
-              const SizedBox(height: 10),
-              const Text(
-                "Selamat Datang di Gestra",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.grey.shade300, blurRadius: 8)],
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Image.asset('assets/images/gestra.png', height: 80),
+                const SizedBox(height: 20),
+                const Text(
+                  "Create an account",
+                  style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
-                child: Column(
+                const SizedBox(height: 30),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: "Name",
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: passController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "Register",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextField(
-                      controller: userController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    TextField(
-                      controller: passController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () {
+                    const Text("Already have an account? "),
+                    GestureDetector(
+                      onTap: () {
                         Navigator.pop(context);
                       },
-                      child: const Text('Buat Akun'),
+                      child: const Text(
+                        "Log in",
+                        style: TextStyle(color: Color.fromRGBO(30, 64, 175, 1)),
+                      ),
                     ),
                   ],
-                ),
-              ),
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -199,3 +343,4 @@ class UnderConstruction extends StatelessWidget {
     );
   }
 }
+
