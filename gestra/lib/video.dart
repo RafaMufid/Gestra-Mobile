@@ -175,6 +175,11 @@ class _VideoPageState extends State<VideoPage> {
                     content: Text('Memutar audio untuk: $_detectedText'),
                     backgroundColor: const Color(0xFF1E40AF),
                     behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).size.height - 150,
+                      left: 20,
+                      right: 20,
+                    ),
                     duration: const Duration(seconds: 2),
                   ),
                 );
