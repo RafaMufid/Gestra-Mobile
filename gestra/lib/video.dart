@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
-class VideoPage extends StatelessWidget {
+class VideoPage extends StatefulWidget {
   const VideoPage({super.key});
+
+  @override
+  State<VideoPage> createState() => _VideoPageState();
+}
+
+class _VideoPageState extends State<VideoPage> {
+  bool _isRecording = false;
+  String _detectedText = 'TIDAK ADA';
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +48,8 @@ class VideoPage extends StatelessWidget {
   }
 
   Widget _buildGestureOverlay() {
+    final Color statusColor = _isRecording ? Colors.green : Colors.grey;
+
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -61,18 +71,29 @@ class VideoPage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-
           Spacer(),
-          _buildRecordButtons(),
+          _buildRecordButtons(
+            onStart: () {
+              setState(() {
+                _isRecording = true;
+                _detectedText = 'HALO SAYA RAFA';
+              });
+            },
+            onStop: () {
+              setState(() {
+                _isRecording = false;
+                _detectedText = 'TIDAK ADA';
+              });
+            },
+          ),
           SizedBox(height: 20),
-
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
               color: const Color.fromARGB(60, 0, 0, 0),
               borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(color: Colors.green, width: 2),
+              border: Border.all(color: statusColor, width: 2),
             ),
             child: Column(
               children: [
@@ -85,10 +106,10 @@ class VideoPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8.0),
-                const Text(
-                  'JEMPOL KE ATAS',
+                Text(
+                  _detectedText, 
                   style: TextStyle(
-                    color: Colors.green,
+                    color: statusColor,
                     fontSize: 24.0,
                     fontWeight: FontWeight.bold,
                   ),
@@ -101,15 +122,12 @@ class VideoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecordButtons() {
+  Widget _buildRecordButtons({required VoidCallback onStart, required VoidCallback onStop}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Tombol Start
         ElevatedButton.icon(
-          onPressed: () {
-            // ini buat logika pas dipencet belom beres pak
-          },
+          onPressed: onStart,
           icon: const Icon(Icons.play_arrow, color: Colors.white),
           label: const Text(
             'Start',
@@ -126,9 +144,7 @@ class VideoPage extends StatelessWidget {
         const SizedBox(width: 20),
         // Tombol Stop
         ElevatedButton.icon(
-          onPressed: () {
-            // ini juga logic buat pas button dipencet tapi belom hehe
-          },
+          onPressed: onStop,
           icon: const Icon(Icons.stop, color: Colors.white),
           label: const Text(
             'Stop',
