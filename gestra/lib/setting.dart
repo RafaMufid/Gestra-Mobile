@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
-
 final Color primaryBlue = Colors.blue.shade800;
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final void Function(int) onNavigate;
+  const SettingsPage({
+    super.key,
+    required this.onNavigate,
+  });
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -17,6 +20,13 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 10.0),
         children: <Widget>[
@@ -48,7 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Language',
             subtitle: 'English (US)',
             onTap: () {
-
+              widget.onNavigate(5);
             },
           ),
 
@@ -85,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Manage Account',
             subtitle: 'Update your profile and security settings.',
             onTap: () {
-
+              widget.onNavigate(5);
             },
           ),
 
