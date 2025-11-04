@@ -72,7 +72,7 @@ class _VideoPageState extends State<VideoPage> {
             ),
           ),
           Spacer(),
-          _buildRecordButtons(
+          _buildButtonRow(
             onStart: () {
               setState(() {
                 _isRecording = true;
@@ -86,7 +86,7 @@ class _VideoPageState extends State<VideoPage> {
               });
             },
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
@@ -122,39 +122,70 @@ class _VideoPageState extends State<VideoPage> {
     );
   }
 
-  Widget _buildRecordButtons({required VoidCallback onStart, required VoidCallback onStop}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildButtonRow({required VoidCallback onStart, required VoidCallback onStop}) {
+    return Stack(
+      alignment: Alignment.center,
       children: [
-        ElevatedButton.icon(
-          onPressed: onStart,
-          icon: const Icon(Icons.play_arrow, color: Colors.white),
-          label: const Text(
-            'Start',
-            style: TextStyle(color: Colors.white),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 76, 175, 80),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Tombol Start
+            ElevatedButton.icon(
+              onPressed: onStart,
+              icon: const Icon(Icons.play_arrow, color: Colors.white),
+              label: const Text(
+                'Start',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 76, 175, 80),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 20),
+
+            ElevatedButton.icon(
+              onPressed: onStop,
+              icon: const Icon(Icons.stop, color: Colors.white),
+              label: const Text(
+                'Stop',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 244, 67, 80),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 20),
-        // Tombol Stop
-        ElevatedButton.icon(
-          onPressed: onStop,
-          icon: const Icon(Icons.stop, color: Colors.white),
-          label: const Text(
-            'Stop',
-            style: TextStyle(color: Colors.white),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 244, 67, 80),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
+        
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton(
+            onPressed: () {
+              if (_isRecording && _detectedText != 'TIDAK ADA') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Memutar audio untuk: $_detectedText'),
+                    backgroundColor: const Color(0xFF1E40AF),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E40AF),
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(16),
+            ),
+            child: const Icon(
+              Icons.volume_up,
+              color: Colors.white,
             ),
           ),
         ),
