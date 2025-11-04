@@ -1,34 +1,110 @@
 import 'package:flutter/material.dart';
+import 'package:gestra/history.dart';
 
 class HomeContentPage extends StatelessWidget {
   const HomeContentPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Kita tambahkan AppBar di sini agar konsisten dengan halaman lain
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
-        automaticallyImplyLeading: false, // Tidak perlu tombol kembali
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Image.asset(
-              'assets/images/gestra.png',
-              height: 100,
+            Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/gestra.png'),
+                  fit: BoxFit.scaleDown,
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-            const Text(
-              "Selamat Datang di GESTRA",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color.fromRGBO(30, 64, 175, 1),
+            Positioned(
+              top: 50,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Hi User!",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromRGBO(30, 64, 175, 1),
+                    ),
+                  ),
+                  const Text(
+                    "Selamat Datang di GESTRA",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromRGBO(30, 64, 175, 1),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: const Text(
+                        "Tempat di mana Anda dapat berinteraksi lancar dengan teman Tuli, tanpa hambatan bahasa isyarat.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w100,
+                          color: Color.fromRGBO(30, 64, 175, 0.8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Column(
+                children: [
+                  const Text(
+                    'Last Translated',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromRGBO(30, 64, 175, 0.8),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.history,
+                      color: Color.fromRGBO(30, 64, 175, 0.8),
+                    ),
+                    title: const Text('Nama saya adalah John Marston'),
+                    subtitle: const Text(
+                      'Terakhir diterjemahkan: 5 menit lalu',
+                    ),
+                    tileColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HistoryPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],
