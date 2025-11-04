@@ -29,6 +29,7 @@ class HistoryPage extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 1,
       ),
+      
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
