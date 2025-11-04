@@ -16,13 +16,18 @@ class _HomePageState extends State<HomePage> {
   // Default index = HomeContentPage
   int _selectedIndex = 2; 
 
-  static final List<Widget> _widgetOptions = <Widget>[
-    HistoryPage(),
-    VideoPage(),
-    HomeContentPage(),
-    SpeechToTextPage(),
-    ProfilePage(),
-  ];
+  late final List<Widget> _widgetOptions;
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      HistoryPage(),
+      VideoPage(),
+      HomeContentPage(onNavigate: _onItemTapped),
+      SpeechToTextPage(),
+      ProfilePage(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {

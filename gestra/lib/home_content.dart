@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:gestra/history.dart';
 
 class HomeContentPage extends StatelessWidget {
-  const HomeContentPage({super.key});
+  final void Function(int) onNavigate;
+  const HomeContentPage({
+    super.key,
+    required this.onNavigate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,12 +99,7 @@ class HomeContentPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HistoryPage(),
-                        ),
-                      );
+                      onNavigate(0);
                     },
                   ),
                 ],
