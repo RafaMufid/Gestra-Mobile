@@ -18,99 +18,75 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      
+      appBar: AppBar(
+        title: const Text('Profile'),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
       body: SafeArea(
-        child: CustomScrollView(
+        child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverAppBar(
-              floating: true,
-              pinned: false,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              elevation: 0,
-              flexibleSpace: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Center(
-                        child: Text(
-                          'Profile',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                const Icon(Icons.account_circle_outlined, size: 100, color: Colors.black),
+                const SizedBox(height: 30),
+
+                buildLabel("Name"),
+                buildInfoBox(controller: nameController, isEditing: isEditing),
+                const SizedBox(height: 20),
+
+                buildLabel("Username"),
+                buildInfoBox(controller: usernameController, isEditing: isEditing),
+                const SizedBox(height: 20),
+
+                buildLabel("Password"),
+                buildInfoBox(
+                  controller: passwordController,
+                  isEditing: isEditing,
+                  isPassword: true,
+                ),
+
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      if (isEditing) {
+                        FocusScope.of(context).unfocus();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Profile berhasil di edit"),
+                            backgroundColor: Color(0xFF1E40AF),
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 2),
                           ),
-                        ),
-                      ),
+                        );
+                      }
+                      isEditing = !isEditing;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E40AF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(width: 48), 
-                  ],
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  ),
+                  child: Text(
+                    isEditing ? "Save" : "Edit Profile",
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 20),
+              ],
             ),
-
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20),
-                    const Icon(Icons.account_circle_outlined, size: 100, color: Colors.black),
-                    const SizedBox(height: 30),
-
-                    buildLabel("Name"),
-                    buildInfoBox(controller: nameController, isEditing: isEditing),
-                    const SizedBox(height: 20),
-
-                    buildLabel("Username"),
-                    buildInfoBox(controller: usernameController, isEditing: isEditing),
-                    const SizedBox(height: 20),
-
-                    buildLabel("Password"),
-                    buildInfoBox(
-                      controller: passwordController,
-                      isEditing: isEditing,
-                      isPassword: true,
-                    ),
-
-                    const SizedBox(height: 30),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          if (isEditing) {
-                            FocusScope.of(context).unfocus();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Profile berhasil di edit"),
-                                backgroundColor: Color(0xFF1E40AF),
-                                behavior: SnackBarBehavior.floating,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          }
-                          isEditing = !isEditing;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E40AF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                      ),
-                      child: Text(
-                        isEditing ? "Save" : "Edit Profile",
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
