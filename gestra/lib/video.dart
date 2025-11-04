@@ -7,6 +7,13 @@ class VideoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Video'),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 1,
+      ),
       body: SafeArea(
         child: Stack(
           fit: StackFit.expand,

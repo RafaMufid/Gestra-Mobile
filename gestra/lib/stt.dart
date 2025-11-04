@@ -12,6 +12,13 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Speech to Text'),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
