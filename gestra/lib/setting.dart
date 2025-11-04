@@ -58,7 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Language',
             subtitle: 'English (US)',
             onTap: () {
-              widget.onNavigate(5);
+              
             },
           ),
 
