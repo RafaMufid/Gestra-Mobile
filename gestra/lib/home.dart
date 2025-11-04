@@ -3,7 +3,7 @@ import 'history.dart';
 import 'video.dart';
 import 'home_content.dart';
 import 'stt.dart';
-import 'profile.dart';
+import 'setting.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
     VideoPage(),
     HomeContentPage(),
     SpeechToTextPage(),
-    ProfilePage(),
+    SettingsPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -54,8 +54,8 @@ class _HomePageState extends State<HomePage> {
             label: 'Speech to Text',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.settings),
+            label: 'Setting',
           ),
         ],
         currentIndex: _selectedIndex,

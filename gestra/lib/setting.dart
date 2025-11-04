@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'profile.dart';
 
 final Color primaryBlue = Colors.blue.shade800;
 
@@ -85,7 +85,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Manage Account',
             subtitle: 'Update your profile and security settings.',
             onTap: () {
-
+              MaterialPageRoute(builder: (context) => const ProfilePage());
             },
           ),
 
