@@ -18,8 +18,8 @@ class _VideoPageState extends State<VideoPage> {
       appBar: AppBar(
         title: const Text('Video'),
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 1,
       ),
       body: SafeArea(
