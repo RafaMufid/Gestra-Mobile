@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+TextEditingController nameController = TextEditingController();
+TextEditingController emailController = TextEditingController();
+TextEditingController passController = TextEditingController();
+
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
