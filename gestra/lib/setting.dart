@@ -40,6 +40,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: const Text('Switch between light and dark themes.'),
             value: _isDarkMode,
+            activeThumbColor: Color.fromRGBO(30, 64, 175, 1),
             onChanged: (bool value) {
               setState(() {
                 _isDarkMode = value;
@@ -47,7 +48,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
             secondary: Icon(
               Icons.brightness_6,
-              color: primaryBlue,
+              color: Color.fromRGBO(30, 64, 175, 1),
             ),
           ),
 
@@ -73,6 +74,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             subtitle: const Text('Receive alerts for new activity and updates.'),
             value: _notificationsEnabled,
+            activeThumbColor: Color.fromRGBO(30, 64, 175, 1),
             onChanged: (bool value) {
               setState(() {
                 _notificationsEnabled = value;
@@ -80,7 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
             secondary: Icon(
               Icons.notifications_active,
-              color: primaryBlue,
+              color: Color.fromRGBO(30, 64, 175, 1),
             ),
           ),
 
@@ -130,7 +132,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Text(
         title,
         style: TextStyle(
-          color: primaryBlue,
+          color: Color.fromRGBO(30, 64, 175, 1),
           fontWeight: FontWeight.w700,
           fontSize: 14,
           letterSpacing: 1.2,
@@ -146,7 +148,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: primaryBlue),
+      leading: Icon(icon, color: Color.fromRGBO(30, 64, 175, 1)),
       title: Text(
         title,
         style: const TextStyle(fontWeight: FontWeight.w500),
