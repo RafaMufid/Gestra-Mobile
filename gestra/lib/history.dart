@@ -40,6 +40,8 @@ class _HistoryPageState extends State<HistoryPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: ListView(
             children: [
+              _sectionTitle('Today'),
+              _divider(),
               for (int i = 0; i < today.length; i++)
               _historyItem(
                 today[i]["type"]!,
