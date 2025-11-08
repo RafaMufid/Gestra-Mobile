@@ -13,6 +13,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+<<<<<<< Updated upstream
+=======
+  camera: ^0.10.0+4
+  speech_to_text: ^6.6.0
+>>>>>>> Stashed changes
   flutter_lints: ^5.0.0
 
 flutter:
