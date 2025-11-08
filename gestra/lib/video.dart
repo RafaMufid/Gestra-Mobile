@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 
 class VideoPage extends StatefulWidget {
   const VideoPage({super.key});
@@ -10,6 +11,47 @@ class VideoPage extends StatefulWidget {
 class _VideoPageState extends State<VideoPage> {
   bool _isRecording = false;
   String _detectedText = 'TIDAK ADA';
+
+  CameraController? _controller;
+  Future<void>? _initializeControllerFuture;
+  List<CameraDescription>? _cameras = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    try{
+      _cameras = await availableCameras();
+      if (_cameras == null || _cameras!.isEmpty) {
+        debugPrint('Tidak ada kamera yang tersedia.');
+        return;
+      }
+
+      _controller = CameraController(
+        _cameras![0],
+        ResolutionPreset.high,
+        enableAudio: false,
+      );
+
+      _initializeControllerFuture = _controller!.initialize();
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      // Handle camera initialization errors here
+      debugPrint('Gagal inisiasi kamera: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +68,7 @@ class _VideoPageState extends State<VideoPage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            _buildCameraPlaceholder(),
+            _buildCameraPreview(),
             _buildGestureOverlay(),
           ],
         ),
@@ -34,16 +76,40 @@ class _VideoPageState extends State<VideoPage> {
     );
   }
 
-  Widget _buildCameraPlaceholder() {
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: Icon(
-          Icons.camera_alt_outlined,
-          color: Colors.grey[900],
-          size: 150.0,
-        ),
-      ),
+  Widget _buildCameraPreview() {
+    // Loading jika kamera belum siap
+    if (_controller == null || _initializeControllerFuture == null) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    return FutureBuilder<void>(
+      future: _initializeControllerFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Transform.scale(
+            scale: 1.0,
+            child: AspectRatio(
+              aspectRatio: _controller!.value.aspectRatio,
+              child: CameraPreview(_controller!),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+              child: 
+              Text(
+                'Gagal memuat kamera: ${snapshot.error}',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+        } else{
+          return const Center(
+            // spinner untuk loading
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+      },
     );
   }
 
