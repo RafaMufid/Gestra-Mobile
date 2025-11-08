@@ -14,7 +14,8 @@ class _VideoPageState extends State<VideoPage> {
 
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
-  List<CameraDescription>? _cameras = [];
+  
+  List<CameraDescription> _cameras = [];
 
   @override
   void initState() {
@@ -25,13 +26,27 @@ class _VideoPageState extends State<VideoPage> {
   Future<void> _initializeCamera() async {
     try{
       _cameras = await availableCameras();
-      if (_cameras == null || _cameras!.isEmpty) {
+      if (_cameras.isEmpty) {
         debugPrint('Tidak ada kamera yang tersedia.');
         return;
       }
+      //Debug
+      debugPrint('Kamera tersedia:');
+      for (int i = 0; i < _cameras.length; i++) {
+        debugPrint(' - ${_cameras[i].name}, arah lensa: ${_cameras[i].lensDirection}');
+      }
+      //End Debug
+      CameraDescription selectedCamera = _cameras[0];
+
+      for (var camera in _cameras) {
+        if (camera.lensDirection == CameraLensDirection.front) {
+          selectedCamera = camera;
+          break;
+        }
+      }
 
       _controller = CameraController(
-        _cameras![0],
+        selectedCamera,
         ResolutionPreset.high,
         enableAudio: false,
       );
@@ -42,7 +57,6 @@ class _VideoPageState extends State<VideoPage> {
         setState(() {});
       }
     } catch (e) {
-      // Handle camera initialization errors here
       debugPrint('Gagal inisiasi kamera: $e');
     }
   }
