@@ -1,4 +1,6 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -9,16 +11,34 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool isEditing = false;
+  bool showPassword = false;
 
-  final TextEditingController nameController = TextEditingController(text: "Bella");
-  final TextEditingController usernameController = TextEditingController(text: "bellaaa");
-  final TextEditingController passwordController = TextEditingController(text: "lalallala");
+  Uint8List? profileImageBytes;
+
+  final TextEditingController nameController = TextEditingController(
+    text: "Bella",
+  );
+  final TextEditingController emailController = TextEditingController(
+    text: "bellaaa@gmail.com",
+  );
+  final TextEditingController passwordController = TextEditingController(
+    text: "lalallala",
+  );
+
+  Future pickImage() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    final bytes = await image.readAsBytes();
+    setState(() {
+      profileImageBytes = bytes;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      
       appBar: AppBar(
         title: const Text('Profile'),
         automaticallyImplyLeading: false,
@@ -35,6 +55,58 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () {
+                    if (isEditing) pickImage();
+                  },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 55,
+                        backgroundColor: Colors.grey.shade300,
+                        backgroundImage: profileImageBytes != null
+                            ? MemoryImage(profileImageBytes!)
+                            : null,
+                        child: profileImageBytes == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Colors.white,
+                              )
+                            : null,
+                      ),
+
+                      if (isEditing)
+                        Container(
+                          width: 110,
+                          height: 110,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(55, 0, 0, 0),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Edit Foto",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                buildLabel("Nama"),
+                buildInfoBox(controller: nameController, isEditing: isEditing),
+                const SizedBox(height: 20),
+
+                buildLabel("Email"),
+                buildInfoBox(controller: emailController, isEditing: isEditing),
                 const Icon(Icons.account_circle_outlined, size: 100, color: Colors.black),
                 const SizedBox(height: 30),
 
@@ -51,6 +123,36 @@ class _ProfilePageState extends State<ProfilePage> {
                   controller: passwordController,
                   isEditing: isEditing,
                   isPassword: true,
+                  showPassword: showPassword,
+                  onTogglePassword: () {
+                    setState(() => showPassword = !showPassword);
+                  },
+                ),
+
+                const SizedBox(height: 30),
+
+                ElevatedButton(
+                  onPressed: () {
+                    if (isEditing) {
+                      if (nameController.text.trim().isEmpty ||
+                          emailController.text.trim().isEmpty ||
+                          passwordController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Semua data harus diisi"),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (!emailController.text.contains('@')) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Email tidak valid"),
+                            backgroundColor: Colors.red,
                 ),
 
                 const SizedBox(height: 30),
@@ -67,6 +169,21 @@ class _ProfilePageState extends State<ProfilePage> {
                             duration: Duration(seconds: 2),
                           ),
                         );
+                        return;
+                      }
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Profile berhasil di edit"),
+                          backgroundColor: Color(0xFF1E40AF),
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      FocusScope.of(context).unfocus();
+                    }
+
+                    setState(() {
                       }
                       isEditing = !isEditing;
                     });
@@ -76,6 +193,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 15,
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                   ),
                   child: Text(
@@ -83,6 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -106,6 +228,8 @@ class _ProfilePageState extends State<ProfilePage> {
     required TextEditingController controller,
     required bool isEditing,
     bool isPassword = false,
+    bool showPassword = false,
+    VoidCallback? onTogglePassword,
   }) {
     return Container(
       width: double.infinity,
@@ -117,6 +241,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: isEditing
           ? TextField(
               controller: controller,
+              obscureText: isPassword ? false : false,
               obscureText: isPassword && !isEditing,
               style: const TextStyle(fontSize: 16),
               decoration: const InputDecoration(
@@ -127,6 +252,30 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           : Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isPassword
+                        ? (showPassword ? controller.text : "••••••••")
+                        : controller.text,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  if (isPassword)
+                    GestureDetector(
+                      onTap: onTogglePassword,
+                      child: Icon(
+                        showPassword ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                        size: 22,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+    );
+  }
+}
               child: Text(
                 isPassword ? "••••••••" : controller.text,
                 style: const TextStyle(fontSize: 16),
