@@ -107,16 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 buildLabel("Email"),
                 buildInfoBox(controller: emailController, isEditing: isEditing),
-                const Icon(Icons.account_circle_outlined, size: 100, color: Colors.black),
                 const SizedBox(height: 30),
-
-                buildLabel("Name"),
-                buildInfoBox(controller: nameController, isEditing: isEditing),
-                const SizedBox(height: 20),
-
-                buildLabel("Username"),
-                buildInfoBox(controller: usernameController, isEditing: isEditing),
-                const SizedBox(height: 20),
 
                 buildLabel("Password"),
                 buildInfoBox(
@@ -153,18 +144,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SnackBar(
                             content: Text("Email tidak valid"),
                             backgroundColor: Colors.red,
-                ),
-
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      if (isEditing) {
-                        FocusScope.of(context).unfocus();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Profile berhasil di edit"),
-                            backgroundColor: Color(0xFF1E40AF),
                             behavior: SnackBarBehavior.floating,
                             duration: Duration(seconds: 2),
                           ),
@@ -184,7 +163,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
 
                     setState(() {
-                      }
                       isEditing = !isEditing;
                     });
                   },
@@ -197,7 +175,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       horizontal: 30,
                       vertical: 15,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                   ),
                   child: Text(
                     isEditing ? "Save" : "Edit Profile",
@@ -209,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
-        ),
+        ),  
       ),
     );
   }
@@ -241,7 +218,6 @@ class _ProfilePageState extends State<ProfilePage> {
       child: isEditing
           ? TextField(
               controller: controller,
-              obscureText: isPassword ? false : false,
               obscureText: isPassword && !isEditing,
               style: const TextStyle(fontSize: 16),
               decoration: const InputDecoration(
@@ -271,14 +247,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                 ],
-              ),
-            ),
-    );
-  }
-}
-              child: Text(
-                isPassword ? "••••••••" : controller.text,
-                style: const TextStyle(fontSize: 16),
               ),
             ),
     );
