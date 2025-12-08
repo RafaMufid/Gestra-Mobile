@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'register.dart';
 import 'home.dart';
 import 'Controller/AuthController.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -126,6 +127,11 @@ class _LoginPageState extends State<LoginPage> {
                         final result = await auth.login(email, password);
 
                         if (result["token"] != null) {
+                          SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                          await prefs.setString("token", result["token"]);
+                          await prefs.setString("password", password);
+
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(

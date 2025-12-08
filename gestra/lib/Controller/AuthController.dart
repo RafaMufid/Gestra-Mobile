@@ -9,8 +9,10 @@ class AuthService {
 
     final response = await http.post(
       url,
-      headers: {"Content-Type": "application/json",
-      "Accept": "application/json",},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
       body: jsonEncode({"email": email, "password": password}),
     );
 
@@ -27,8 +29,10 @@ class AuthService {
 
     final response = await http.post(
       url,
-      headers: {"Content-Type": "application/json",
-      "Accept": "application/json",},
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
       body: jsonEncode({
         "username": username,
         "email": email,
@@ -39,6 +43,77 @@ class AuthService {
 
     print("STATUS CODE: ${response.statusCode}");
     print("BODY: ${response.body}");
+
+    return jsonDecode(response.body);
+  }
+
+  Future<Map<String, dynamic>> getProfile(String token) async {
+    final url = Uri.parse("$baseUrl/profile");
+
+    final response = await http.get(
+      url,
+      headers: {"Accept": "application/json", "Authorization": "Bearer $token"},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load profile: ${response.statusCode}');
+    }
+  }
+
+  Future<Map<String, dynamic>> updateProfile({
+    required String token,
+    required String username,
+    required String email,
+    String? password,
+  }) async {
+    final url = Uri.parse("$baseUrl/profile");
+
+    final body = {"username": username, "email": email};
+
+    if (password != null && password.isNotEmpty) {
+      body["password"] = password;
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode(body),
+    );
+
+    print("UPDATE PROFILE STATUS: ${response.statusCode}");
+    print("UPDATE PROFILE BODY: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(data['message'] ?? 'Gagal update profile');
+    }
+
+    return data;
+  }
+
+  Future<Map<String, dynamic>> updatePhoto({
+    required String token,
+    required String filePath,
+  }) async {
+    final url = Uri.parse("$baseUrl/profile/photo");
+
+    final request = http.MultipartRequest('POST', url);
+    request.headers.addAll({
+      "Accept": "application/json",
+      "Authorization": "Bearer $token",
+    });
+
+    request.files.add(await http.MultipartFile.fromPath('photo', filePath));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     return jsonDecode(response.body);
   }
