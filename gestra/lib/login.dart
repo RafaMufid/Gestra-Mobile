@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'register.dart';
 import 'home.dart';
+import 'Controller/AuthController.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController passController = TextEditingController();
+  State<LoginPage> createState() => _LoginPageState();
+}
 
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController passController = TextEditingController();
+
+  bool _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -24,21 +32,27 @@ class LoginPage extends StatelessWidget {
                 const Text(
                   "Welcome back",
                   style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 const SizedBox(height: 30),
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: "Name",
+                    labelText: "Email",
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderSide: const BorderSide(
+                        color: Color.fromRGBO(30, 64, 175, 1),
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
+                      borderSide: const BorderSide(
+                        color: Color.fromRGBO(30, 64, 175, 1),
+                        width: 2,
+                      ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -46,16 +60,29 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 15),
                 TextField(
                   controller: passController,
-                  obscureText: true,
+                  obscureText: _obscure,
                   decoration: InputDecoration(
                     labelText: "Password",
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscure = !_obscure;
+                        });
+                      },
+                    ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
-                      borderRadius: BorderRadius.circular(6),
+                      borderSide: BorderSide(
+                        color: Color.fromRGBO(30, 64, 175, 1),
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color.fromRGBO(30, 64, 175, 1), width: 2),
-                      borderRadius: BorderRadius.circular(6),
+                      borderSide: BorderSide(
+                        color: Color.fromRGBO(30, 64, 175, 1),
+                        width: 2,
+                      ),
                     ),
                   ),
                 ),
@@ -81,12 +108,42 @@ class LoginPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HomePage()),
-                      );
+                    onPressed: () async {
+                      String email = nameController.text.trim();
+                      String password = passController.text.trim();
+
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Email dan password wajib diisi"),
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        final auth = AuthService();
+                        final result = await auth.login(email, password);
+
+                        if (result["token"] != null) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomePage(),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(result["message"] ?? "Login gagal"),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Terjadi kesalahan: $e")),
+                        );
+                      }
                     },
                     child: const Text(
                       "Log in",
@@ -104,7 +161,8 @@ class LoginPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const RegisterPage()),
+                            builder: (context) => const RegisterPage(),
+                          ),
                         );
                       },
                       child: const Text(
@@ -113,7 +171,7 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
