@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:gestra/Controller/AuthController.dart';
+import 'Controller/AuthController.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
