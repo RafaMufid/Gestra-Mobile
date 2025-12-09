@@ -13,6 +13,7 @@ dependencies:
   http: ^1.6.0
   image_picker: ^0.8.9
   camera: ^0.10.5
+  speech_to_text: ^7.0.0
   flutter_tflite: ^1.0.1
   permission_handler: ^11.3.0
   path: ^1.9.1
@@ -22,8 +23,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  camera: ^0.10.5
-  speech_to_text: ^7.0.0
   flutter_lints: ^5.0.0
 
 flutter:
