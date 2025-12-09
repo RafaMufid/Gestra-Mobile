@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
+import 'package:flutter_tflite/flutter_tflite.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class VideoPage extends StatefulWidget {
   const VideoPage({super.key});
@@ -9,7 +12,118 @@ class VideoPage extends StatefulWidget {
 
 class _VideoPageState extends State<VideoPage> {
   bool _isRecording = false;
-  String _detectedText = 'TIDAK ADA';
+  String _detectedText = 'TIDAK ADA'; 
+  String _confidence = "";
+
+  CameraController? _controller;
+  bool _isCameraInitialized = false;
+  bool _isModelLoaded = false;
+  bool _isBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupSystem();
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    Tflite.close();
+    super.dispose();
+  }
+
+  Future<void> _setupSystem() async {
+    await Permission.camera.request();
+
+    await _loadModel();
+
+    await _initializeCamera();
+  }
+
+  Future<void> _loadModel() async {
+    try {
+      String? res = await Tflite.loadModel(
+        model: "assets/model_sibi.tflite",
+        labels: "assets/labels.txt",
+        numThreads: 1,
+        isAsset: true,
+        useGpuDelegate: false,
+      );
+      setState(() {
+        _isModelLoaded = res == "success";
+      });
+      debugPrint("Model Loaded: $res");
+    } catch (e) {
+      debugPrint("Gagal memuat model: $e");
+    }
+  }
+
+  Future<void> _initializeCamera() async {
+    final cameras = await availableCameras();
+    if (cameras.isEmpty) return;
+
+    // Cari kamera depan
+    final frontCamera = cameras.firstWhere(
+      (c) => c.lensDirection == CameraLensDirection.front,
+      orElse: () => cameras.first,
+    );
+
+    _controller = CameraController(
+      frontCamera,
+      ResolutionPreset.medium,
+      enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
+    );
+
+    try {
+      await _controller!.initialize();
+      setState(() {
+        _isCameraInitialized = true;
+      });
+
+      _controller!.startImageStream((CameraImage img) {
+        if (_isRecording && !_isBusy && _isModelLoaded) {
+          _isBusy = true;
+          _runModelOnFrame(img);
+        }
+      });
+    } catch (e) {
+      debugPrint('Error kamera: $e');
+    }
+  }
+
+  Future<void> _runModelOnFrame(CameraImage img) async {
+    try {
+      var recognitions = await Tflite.runModelOnFrame(
+        bytesList: img.planes.map((plane) {
+          return plane.bytes;
+        }).toList(),
+        imageHeight: img.height,
+        imageWidth: img.width,
+        imageMean: 127.5, // YOLO biasanya inputnya 0-1 atau 0-255, coba 0 atau 127.5
+        imageStd: 127.5, // Normalisasi pixel 0-1
+        rotation: 270,
+        numResults: 1,
+        threshold: 0.4,
+        asynch: true,
+      );
+
+      if (recognitions != null && recognitions.isNotEmpty) {
+        setState(() {
+          String label = recognitions[0]['label'];
+          _detectedText = label.replaceAll(RegExp(r'[0-9]'), '').trim(); 
+          
+          double confValue = recognitions[0]['confidence'];
+          _confidence = "${(confValue * 100).toStringAsFixed(0)}%";
+        });
+      }
+    } catch (e) {
+      debugPrint("Error deteksi: $e");
+    } finally {
+      _isBusy = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +140,7 @@ class _VideoPageState extends State<VideoPage> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            _buildCameraPlaceholder(),
+            _buildCameraPreview(),
             _buildGestureOverlay(),
           ],
         ),
@@ -34,17 +148,11 @@ class _VideoPageState extends State<VideoPage> {
     );
   }
 
-  Widget _buildCameraPlaceholder() {
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: Icon(
-          Icons.camera_alt_outlined,
-          color: Colors.grey[900],
-          size: 150.0,
-        ),
-      ),
-    );
+  Widget _buildCameraPreview() {
+    if (!_isCameraInitialized || _controller == null) {
+      return const Center(child: CircularProgressIndicator(color: Colors.white));
+    }
+    return CameraPreview(_controller!);
   }
 
   Widget _buildGestureOverlay() {
@@ -58,31 +166,38 @@ class _VideoPageState extends State<VideoPage> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(60, 0, 0, 0),
+              color: const Color.fromARGB(150, 0, 0, 0),
               borderRadius: BorderRadius.circular(12.0),
             ),
-            child: Text(
+            child: const Text(
               'Posisikan tangan Anda di depan kamera',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.0,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16.0),
               textAlign: TextAlign.center,
             ),
           ),
-          Spacer(),
+          const Spacer(),
+          
+          if (_isRecording && _confidence.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                "Akurasi: $_confidence",
+                style: const TextStyle(color: Colors.yellow, fontSize: 16),
+              ),
+            ),
+
           _buildButtonRow(
             onStart: () {
               setState(() {
                 _isRecording = true;
-                _detectedText = 'HALO SAYA RAFA';
+                _detectedText = "Mendeteksi...";
               });
             },
             onStop: () {
               setState(() {
                 _isRecording = false;
-                _detectedText = 'TIDAK ADA';
+                _detectedText = "TIDAK ADA";
+                _confidence = "";
               });
             },
           ),
@@ -91,26 +206,26 @@ class _VideoPageState extends State<VideoPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(60, 0, 0, 0),
+              color: const Color.fromARGB(180, 0, 0, 0),
               borderRadius: BorderRadius.circular(12.0),
               border: Border.all(color: statusColor, width: 2),
             ),
             child: Column(
               children: [
-                Text(
+                const Text(
                   'GESTUR TERDETEKSI:',
                   style: TextStyle(
-                    color: const Color.fromARGB(80, 255, 255, 255),
+                    color: Color.fromARGB(150, 255, 255, 255),
                     fontSize: 14.0,
                     letterSpacing: 1.1,
                   ),
                 ),
                 const SizedBox(height: 8.0),
                 Text(
-                  _detectedText, 
+                  _detectedText,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 24.0,
+                    fontSize: 40.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -123,77 +238,26 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   Widget _buildButtonRow({required VoidCallback onStart, required VoidCallback onStop}) {
-    return Stack(
-      alignment: Alignment.center,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Tombol Start
-            ElevatedButton.icon(
-              onPressed: onStart,
-              icon: const Icon(Icons.play_arrow, color: Colors.white),
-              label: const Text(
-                'Start',
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 76, 175, 80),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
-            ),
-            const SizedBox(width: 20),
-
-            ElevatedButton.icon(
-              onPressed: onStop,
-              icon: const Icon(Icons.stop, color: Colors.white),
-              label: const Text(
-                'Stop',
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 244, 67, 80),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-              ),
-            ),
-          ],
+        ElevatedButton.icon(
+          onPressed: onStart,
+          icon: const Icon(Icons.play_arrow, color: Colors.white),
+          label: const Text('Start', style: TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+          ),
         ),
-        
-        Align(
-          alignment: Alignment.centerRight,
-          child: ElevatedButton(
-            onPressed: () {
-              if (_isRecording && _detectedText != 'TIDAK ADA') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Memutar audio untuk: $_detectedText'),
-                    backgroundColor: const Color(0xFF1E40AF),
-                    behavior: SnackBarBehavior.floating,
-                    margin: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).size.height - 150,
-                      left: 20,
-                      right: 20,
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E40AF),
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(16),
-            ),
-            child: const Icon(
-              Icons.volume_up,
-              color: Colors.white,
-            ),
+        const SizedBox(width: 20),
+        ElevatedButton.icon(
+          onPressed: onStop,
+          icon: const Icon(Icons.stop, color: Colors.white),
+          label: const Text('Stop', style: TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
           ),
         ),
       ],
