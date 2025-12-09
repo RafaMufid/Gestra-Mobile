@@ -1,36 +1,84 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:gestra/Controller/AuthController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Controller/AuthController.dart';
 
 class ProfilePage extends StatefulWidget {
-  ProfilePage({super.key});
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // State Variables
   bool isEditing = false;
   bool showPassword = false;
-
-  Uint8List? profileImageBytes;
-
-  final AuthService authService = AuthService();
   bool isLoading = true;
 
+  Uint8List? profileImageBytes;
   String? photoUrl;
   String? pickedImagePath;
 
-  final TextEditingController nameController = TextEditingController(text: "");
-  final TextEditingController emailController = TextEditingController(text: "");
-  final TextEditingController passwordController = TextEditingController(
-    text: "",
-  );
+  final AuthService authService = AuthService();
 
-  Future pickImage() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+  // Controllers
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    final savedPassword = prefs.getString('password');
+    if (mounted) {
+      setState(() {
+        passwordController.text = savedPassword ?? "";
+      });
+    }
+
+    if (token == null) {
+      print("Token tidak ditemukan");
+      if (mounted) setState(() => isLoading = false);
+      return;
+    }
+
+    try {
+      final res = await authService.getProfile(token);
+
+      if (mounted) {
+        setState(() {
+          nameController.text = res['user']['username'] ?? '';
+          emailController.text = res['user']['email'] ?? '';
+          photoUrl = res['photo_url'];
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Gagal load dari server: $e");
+      if (mounted) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Gagal terhubung ke server (Cek koneksi)"),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image == null) return;
 
@@ -41,46 +89,20 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  Future<void> loadProfile() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token == null) {
-      print("Token tidak ditemukan");
-      setState(() {
-        isLoading = false;
-      });
-      return;
+  ImageProvider? _getProfileImageProvider() {
+    if (profileImageBytes != null) {
+      return MemoryImage(profileImageBytes!);
     }
-
-    try {
-      final res = await authService.getProfile(token);
-      final user = res['user'];
-      photoUrl = res['photo_url'];
-      final savedPassword = prefs.getString('password');
-
-      setState(() {
-        nameController.text = user['username'] ?? '';
-        emailController.text = user['email'] ?? '';
-        passwordController.text = savedPassword ?? "";
-        photoUrl = res['photo_url'];
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return NetworkImage(photoUrl!);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    loadProfile();
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = _getProfileImageProvider();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -101,6 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
+
                       GestureDetector(
                         onTap: () {
                           if (isEditing) pickImage();
@@ -111,14 +134,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             CircleAvatar(
                               radius: 55,
                               backgroundColor: Colors.grey.shade300,
-                              backgroundImage: profileImageBytes != null
-                                  ? MemoryImage(profileImageBytes!)
-                                  : (photoUrl != null
-                                        ? NetworkImage(photoUrl!)
-                                              as ImageProvider
-                                        : null),
-                              child:
-                                  profileImageBytes == null && photoUrl == null
+                              backgroundImage: imageProvider,
+                              onBackgroundImageError: imageProvider != null
+                                  ? (exception, stackTrace) {
+                                      print("Gagal memuat gambar: $exception");
+                                      setState(() => photoUrl = null);
+                                    }
+                                  : null,
+                              child: _getProfileImageProvider() == null
                                   ? const Icon(
                                       Icons.person,
                                       size: 60,
@@ -131,18 +154,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               Container(
                                 width: 110,
                                 height: 110,
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(55, 0, 0, 0),
+                                decoration: const BoxDecoration(
+                                  color: Color.fromARGB(80, 0, 0, 0),
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
-                                child: const Text(
-                                  "Edit Foto",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
                                 ),
                               ),
                           ],
@@ -181,105 +200,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ElevatedButton(
                         onPressed: () async {
                           if (isEditing) {
-                            if (nameController.text.trim().isEmpty ||
-                                emailController.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Nama dan email harus diisi"),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                              return;
-                            }
-
-                            if (!emailController.text.contains('@')) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Email tidak valid"),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                              return;
-                            }
-
-                            final prefs = await SharedPreferences.getInstance();
-                            final token = prefs.getString('token');
-
-                            if (token == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Token tidak ditemukan, silakan login ulang",
-                                  ),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                              return;
-                            }
-
-                            try {
-                              await authService.updateProfile(
-                                token: token,
-                                username: nameController.text.trim(),
-                                email: emailController.text.trim(),
-                                password: passwordController.text.trim().isEmpty
-                                    ? null
-                                    : passwordController.text.trim(),
-                              );
-
-                              if (passwordController.text.trim().isNotEmpty) {
-                                await prefs.setString(
-                                  "password",
-                                  passwordController.text.trim(),
-                                );
-                              }
-
-                              await loadProfile();
-
-                              if (pickedImagePath != null) {
-                                final photoRes = await authService.updatePhoto(
-                                  token: token,
-                                  filePath: pickedImagePath!,
-                                );
-
-                                setState(() {
-                                  photoUrl = photoRes['photo_url'];
-                                });
-                              }
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Profile berhasil diperbarui"),
-                                  backgroundColor: Color(0xFF1E40AF),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-
-                              FocusScope.of(context).unfocus();
-
-                              setState(() {
-                                isEditing = false;
-                              });
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Gagal update profile: $e"),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            }
+                            await _handleSaveProfile();
                           } else {
                             setState(() {
-                              isEditing = !isEditing;
+                              isEditing = true;
                             });
                           }
                         },
@@ -301,7 +225,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 20),
                     ],
                   ),
@@ -309,6 +232,72 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
     );
+  }
+
+  Future<void> _handleSaveProfile() async {
+    if (nameController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Nama dan email harus diisi"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sesi habis, silakan login ulang")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      // 1. Update Text (Nama, Email, Password)
+      await authService.updateProfile(
+        token: token,
+        username: nameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text.trim().isEmpty
+            ? null
+            : passwordController.text.trim(),
+      );
+
+      if (passwordController.text.trim().isNotEmpty) {
+        await prefs.setString("password", passwordController.text.trim());
+      }
+
+      // 2. Update Foto (Jika ada yang dipilih)
+      if (pickedImagePath != null) {
+        await authService.updatePhoto(token: token, filePath: pickedImagePath!);
+      }
+
+      // 3. Refresh Data
+      await _loadProfile();
+
+      if (mounted) {
+        setState(() => isEditing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Profile berhasil diperbarui!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Widget buildLabel(String text) {
@@ -321,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  static Widget buildInfoBox({
+  Widget buildInfoBox({
     required TextEditingController controller,
     required bool isEditing,
     bool isPassword = false,
@@ -332,7 +321,7 @@ class _ProfilePageState extends State<ProfilePage> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        border: Border.all(color: Color(0xFF1E40AF)),
+        border: Border.all(color: const Color(0xFF1E40AF)),
         borderRadius: BorderRadius.circular(5),
       ),
       child: isEditing

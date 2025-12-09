@@ -11,7 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.6.0
-  image_picker: ^1.0.4
+  image_picker: ^0.8.9
+  camera: ^0.10.5
+  flutter_tflite: ^1.0.1
+  permission_handler: ^11.3.0
   path: ^1.9.1
   shared_preferences: ^2.5.3
   sqflite: ^2.4.2
@@ -19,7 +22,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  camera: ^0.10.0+4
+  camera: ^0.10.5
   speech_to_text: ^7.0.0
   flutter_lints: ^5.0.0
 
@@ -27,3 +30,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/gestra.png
+    - assets/model_sibi.tflite
+    - assets/labels.txt
