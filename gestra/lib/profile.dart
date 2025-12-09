@@ -3,9 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// Pastikan import ini sesuai dengan struktur folder Anda.
-// Jika error, coba ganti jadi: import 'Controller/AuthController.dart';
-import 'package:gestra/Controller/AuthController.dart'; 
+import 'package:gestra/Controller/AuthController.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,9 +18,9 @@ class _ProfilePageState extends State<ProfilePage> {
   bool showPassword = false;
   bool isLoading = true;
 
-  Uint8List? profileImageBytes; // Untuk gambar yang baru dipilih dari galeri
-  String? photoUrl; // Untuk gambar dari server
-  String? pickedImagePath; // Path file lokal untuk upload
+  Uint8List? profileImageBytes;
+  String? photoUrl;
+  String? pickedImagePath;
 
   final AuthService authService = AuthService();
 
@@ -37,12 +35,10 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadProfile();
   }
 
-  // --- FUNGSI UTAMA: LOAD PROFILE (YANG DIPERBAIKI) ---
   Future<void> _loadProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
-    // 1. Ambil Password dari HP DULU (Supaya langsung muncul)
     final savedPassword = prefs.getString('password');
     if (mounted) {
       setState(() {
@@ -57,31 +53,29 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     try {
-      // 2. Coba ambil data Nama & Email dari Server
       final res = await authService.getProfile(token);
-      
+
       if (mounted) {
         setState(() {
-          // Gunakan null coalescing (??) agar tidak crash jika data kosong
           nameController.text = res['user']['username'] ?? '';
           emailController.text = res['user']['email'] ?? '';
-          photoUrl = res['photo_url']; // URL foto dari server
+          photoUrl = res['photo_url'];
           isLoading = false;
         });
       }
     } catch (e) {
       print("Gagal load dari server: $e");
-      // Jika server gagal, matikan loading agar user tetap bisa melihat password
       if (mounted) {
         setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Gagal terhubung ke server (Cek koneksi)")),
+          const SnackBar(
+            content: Text("Gagal terhubung ke server (Cek koneksi)"),
+          ),
         );
       }
     }
   }
 
-  // --- FUNGSI PILIH GAMBAR ---
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
@@ -95,22 +89,20 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  // --- HELPER: MENENTUKAN GAMBAR MANA YANG DIPAKAI ---
   ImageProvider? _getProfileImageProvider() {
-    // 1. Jika user baru pilih gambar dari galeri, pakai itu
     if (profileImageBytes != null) {
       return MemoryImage(profileImageBytes!);
     }
-    // 2. Jika ada URL dari server, pakai itu
     if (photoUrl != null && photoUrl!.isNotEmpty) {
       return NetworkImage(photoUrl!);
     }
-    // 3. Jika tidak ada keduanya, return null (nanti jadi Icon orang)
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final imageProvider = _getProfileImageProvider();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -131,8 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      
-                      // --- BAGIAN FOTO PROFIL ---
+
                       GestureDetector(
                         onTap: () {
                           if (isEditing) pickImage();
@@ -143,19 +134,22 @@ class _ProfilePageState extends State<ProfilePage> {
                             CircleAvatar(
                               radius: 55,
                               backgroundColor: Colors.grey.shade300,
-                              // Panggil fungsi helper gambar di sini
-                              backgroundImage: _getProfileImageProvider(),
-                              // Jika gambar null/gagal, tampilkan Icon
-                              onBackgroundImageError: (exception, stackTrace) {
-                                print("Gagal memuat gambar: $exception");
-                                setState(() => photoUrl = null);
-                              },
+                              backgroundImage: imageProvider,
+                              onBackgroundImageError: imageProvider != null
+                                  ? (exception, stackTrace) {
+                                      print("Gagal memuat gambar: $exception");
+                                      setState(() => photoUrl = null);
+                                    }
+                                  : null,
                               child: _getProfileImageProvider() == null
-                                  ? const Icon(Icons.person, size: 60, color: Colors.white)
+                                  ? const Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: Colors.white,
+                                    )
                                   : null,
                             ),
-                            
-                            // Overlay tulisan "Edit Foto" saat mode edit
+
                             if (isEditing)
                               Container(
                                 width: 110,
@@ -165,7 +159,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
-                                child: const Icon(Icons.camera_alt, color: Colors.white),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                ),
                               ),
                           ],
                         ),
@@ -173,7 +170,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 30),
 
-                      // --- FORM INPUT ---
                       buildLabel("Nama"),
                       buildInfoBox(
                         controller: nameController,
@@ -201,14 +197,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 30),
 
-                      // --- TOMBOL SAVE / EDIT ---
                       ElevatedButton(
                         onPressed: () async {
-                          // JIKA SEDANG EDIT -> TOMBOL JADI "SAVE"
                           if (isEditing) {
-                            await _handleSaveProfile(); // Panggil fungsi simpan
+                            await _handleSaveProfile();
                           } else {
-                            // JIKA TIDAK EDIT -> TOMBOL JADI "EDIT"
                             setState(() {
                               isEditing = true;
                             });
@@ -219,11 +212,17 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
                         ),
                         child: Text(
                           isEditing ? "Save" : "Edit Profile",
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -235,11 +234,14 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // --- LOGIKA SIMPAN DATA (Dipisah agar rapi) ---
   Future<void> _handleSaveProfile() async {
-    if (nameController.text.trim().isEmpty || emailController.text.trim().isEmpty) {
+    if (nameController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Nama dan email harus diisi"), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text("Nama dan email harus diisi"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -254,7 +256,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    setState(() => isLoading = true); // Mulai loading saat simpan
+    setState(() => isLoading = true);
 
     try {
       // 1. Update Text (Nama, Email, Password)
@@ -262,34 +264,35 @@ class _ProfilePageState extends State<ProfilePage> {
         token: token,
         username: nameController.text.trim(),
         email: emailController.text.trim(),
-        password: passwordController.text.trim().isEmpty ? null : passwordController.text.trim(),
+        password: passwordController.text.trim().isEmpty
+            ? null
+            : passwordController.text.trim(),
       );
 
-      // Simpan password baru ke HP jika diubah
       if (passwordController.text.trim().isNotEmpty) {
         await prefs.setString("password", passwordController.text.trim());
       }
 
       // 2. Update Foto (Jika ada yang dipilih)
       if (pickedImagePath != null) {
-        await authService.updatePhoto(
-          token: token,
-          filePath: pickedImagePath!,
-        );
+        await authService.updatePhoto(token: token, filePath: pickedImagePath!);
       }
 
       // 3. Refresh Data
-      await _loadProfile(); 
+      await _loadProfile();
 
       if (mounted) {
-        setState(() => isEditing = false); // Kembali ke mode lihat
+        setState(() => isEditing = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile berhasil diperbarui!"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Profile berhasil diperbarui!"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => isLoading = false); // Matikan loading jika error
+        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red),
         );
@@ -297,7 +300,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // --- WIDGET HELPER ---
   Widget buildLabel(String text) {
     return Align(
       alignment: Alignment.centerLeft,
