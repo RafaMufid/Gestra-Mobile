@@ -11,14 +11,14 @@ class VideoPage extends StatefulWidget {
 }
 
 class _VideoPageState extends State<VideoPage> {
-  bool _isRecording = false; // Status apakah tombol Start ditekan
-  String _detectedText = 'TIDAK ADA'; // Hasil deteksi
-  String _confidence = ""; // Tingkat keyakinan (%)
+  bool _isRecording = false;
+  String _detectedText = 'TIDAK ADA'; 
+  String _confidence = "";
 
   CameraController? _controller;
   bool _isCameraInitialized = false;
   bool _isModelLoaded = false;
-  bool _isBusy = false; // Mencegah bottleneck (pemrosesan tumpuk)
+  bool _isBusy = false;
 
   @override
   void initState() {
@@ -29,18 +29,15 @@ class _VideoPageState extends State<VideoPage> {
   @override
   void dispose() {
     _controller?.dispose();
-    Tflite.close(); // Tutup model saat keluar halaman
+    Tflite.close();
     super.dispose();
   }
 
   Future<void> _setupSystem() async {
-    // 1. Request izin kamera
     await Permission.camera.request();
 
-    // 2. Load Model AI
     await _loadModel();
 
-    // 3. Inisialisasi Kamera
     await _initializeCamera();
   }
 
@@ -49,7 +46,7 @@ class _VideoPageState extends State<VideoPage> {
       String? res = await Tflite.loadModel(
         model: "assets/model_sibi.tflite",
         labels: "assets/labels.txt",
-        numThreads: 1, // Gunakan 1 thread agar HP tidak panas
+        numThreads: 1,
         isAsset: true,
         useGpuDelegate: false,
       );
@@ -74,7 +71,7 @@ class _VideoPageState extends State<VideoPage> {
 
     _controller = CameraController(
       frontCamera,
-      ResolutionPreset.medium, // Resolusi medium cukup untuk akurasi & performa
+      ResolutionPreset.medium,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
@@ -85,7 +82,6 @@ class _VideoPageState extends State<VideoPage> {
         _isCameraInitialized = true;
       });
 
-      // Mulai stream gambar, tapi hanya proses jika tombol Start ditekan
       _controller!.startImageStream((CameraImage img) {
         if (_isRecording && !_isBusy && _isModelLoaded) {
           _isBusy = true;
@@ -105,19 +101,17 @@ class _VideoPageState extends State<VideoPage> {
         }).toList(),
         imageHeight: img.height,
         imageWidth: img.width,
-        imageMean: 0.0, // YOLO biasanya inputnya 0-1 atau 0-255, coba 0 atau 127.5
-        imageStd: 255.0, // Normalisasi pixel 0-1
-        rotation: 90,    // Sesuaikan rotasi (Android biasanya 90/270)
-        numResults: 1,   // Ambil 1 prediksi terbaik
-        threshold: 0.4,  // Tampilkan hanya jika yakin > 40%
+        imageMean: 127.5, // YOLO biasanya inputnya 0-1 atau 0-255, coba 0 atau 127.5
+        imageStd: 127.5, // Normalisasi pixel 0-1
+        rotation: 270,
+        numResults: 1,
+        threshold: 0.4,
         asynch: true,
       );
 
       if (recognitions != null && recognitions.isNotEmpty) {
         setState(() {
-          // Format output: {index: 0, label: "A", confidence: 0.95}
           String label = recognitions[0]['label'];
-          // Bersihkan label jika ada index angka di depannya (misal "0 A")
           _detectedText = label.replaceAll(RegExp(r'[0-9]'), '').trim(); 
           
           double confValue = recognitions[0]['confidence'];
@@ -172,7 +166,7 @@ class _VideoPageState extends State<VideoPage> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(150, 0, 0, 0), // Dibuat lebih gelap agar terbaca
+              color: const Color.fromARGB(150, 0, 0, 0),
               borderRadius: BorderRadius.circular(12.0),
             ),
             child: const Text(
@@ -183,13 +177,12 @@ class _VideoPageState extends State<VideoPage> {
           ),
           const Spacer(),
           
-          // Indikator Confidence (Opsional)
           if (_isRecording && _confidence.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Text(
                 "Akurasi: $_confidence",
-                style: const TextStyle(color: Colors.yellow, fontSize: 14),
+                style: const TextStyle(color: Colors.yellow, fontSize: 16),
               ),
             ),
 
@@ -232,7 +225,7 @@ class _VideoPageState extends State<VideoPage> {
                   _detectedText,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 40.0, // Diperbesar agar jelas
+                    fontSize: 40.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
