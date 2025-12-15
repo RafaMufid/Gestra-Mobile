@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 
 class SpeechToTextPage extends StatefulWidget {
   @override
@@ -17,7 +18,12 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   @override
   void initState() {
     super.initState();
+    requestMicPermission();
     _speech = stt.SpeechToText();
+  }
+
+  Future<void> requestMicPermission() async {
+    await Permission.microphone.request();
   }
 
   String _formatTime(int seconds) {
@@ -28,10 +34,9 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
 
   void _startTimer() {
     _seconds = 0;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _seconds++;
-      });
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer) {
+      if (!mounted) return;
+      setState(() => _seconds++);
     });
   }
 
@@ -41,18 +46,26 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
 
   Future<void> _toggleRecording() async {
     if (!isRecording) {
-      bool available = await _speech.initialize();
+      bool available = await _speech.initialize(
+        onError: (e) => print("Error: $e"),
+        onStatus: (s) => print("Status: $s"),
+      );
+
       if (available) {
         setState(() {
           isRecording = true;
           recognizedText = "";
         });
+
         _startTimer();
-        _speech.listen(onResult: (result) {
-          setState(() {
-            recognizedText = result.recognizedWords;
-          });
-        });
+
+        _speech.listen(
+          localeId: "id_ID",
+          onResult: (result) {
+            if (!mounted) return;
+            setState(() => recognizedText = result.recognizedWords);
+          },
+        );
       }
     } else {
       setState(() => isRecording = false);
@@ -64,6 +77,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _speech.stop();
     super.dispose();
   }
 
@@ -73,90 +87,68 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Speech to Text'),
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
       ),
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  // Bagian timer
-                  Container(
-                    height: 150,
-                    color: Colors.grey[200],
-                    child: Center(
-                      child: Text(
-                        _formatTime(_seconds),
-                        style: const TextStyle(
-                          fontSize: 24,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Hasil teks dari suara
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black26),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        recognizedText.isEmpty
-                            ? "Hasil rekaman suara akan muncul di sini..."
-                            : recognizedText,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 40.0),
-                    child: GestureDetector(
-                      onTap: _toggleRecording,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        height: 70,
-                        width: 70,
-                        decoration: BoxDecoration(
-                          color: isRecording ? Colors.white : Colors.red,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.grey.shade400,
-                            width: 2,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(
-                            isRecording ? Icons.stop : Icons.mic,
-                            color: isRecording ? Colors.red : Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      body: Column(
+        children: [
+          Container(
+            height: 140,
+            color: Colors.grey[200],
+            child: Center(
+              child: Text(
+                _formatTime(_seconds),
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black26),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  recognizedText.isEmpty
+                      ? "Mulai bicara untuk melihat hasil..."
+                      : recognizedText,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: GestureDetector(
+              onTap: _toggleRecording,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                height: 75,
+                width: 75,
+                decoration: BoxDecoration(
+                  color: isRecording ? Colors.white : Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey, width: 2),
+                ),
+                child: Icon(
+                  isRecording ? Icons.stop : Icons.mic,
+                  color: isRecording ? Colors.red : Colors.white,
+                  size: 34,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
