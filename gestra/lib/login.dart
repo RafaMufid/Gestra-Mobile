@@ -123,6 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                       }
 
                       try {
+                        print("coba login yah sabar...");
                         final auth = AuthService();
                         final result = await auth.login(email, password);
 

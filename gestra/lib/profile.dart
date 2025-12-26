@@ -13,7 +13,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // State Variables
   bool isEditing = false;
   bool showPassword = false;
   bool isLoading = true;
