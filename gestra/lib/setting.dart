@@ -13,13 +13,13 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool _isDarkMode = false;
-  bool _notificationsEnabled = true;
+  // bool _notificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: const Text('Pengaturan'),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -36,7 +36,7 @@ class _SettingsPageState extends State<SettingsPage> {
               'Dark Mode',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
-            subtitle: const Text('Switch between light and dark themes.'),
+            subtitle: const Text('Ubah antara mode terang atau gelap.'),
             value: _isDarkMode,
             activeThumbColor: Color.fromRGBO(30, 64, 175, 1),
             onChanged: (bool value) {
@@ -54,52 +54,51 @@ class _SettingsPageState extends State<SettingsPage> {
 
           _buildListTile(
             icon: Icons.language,
-<<<<<<< Updated upstream
+
             title: 'Language',
             subtitle: 'English (US)',
+
+            title: 'Bahasa',
+            subtitle: 'Indonesia',
+
             onTap: () {
               
             },
-=======
-            title: 'Bahasa',
-            subtitle: 'Indonesia',
-            onTap: () {},
->>>>>>> Stashed changes
           ),
 
           const SizedBox(height: 20),
-          _buildSettingsHeader('NOTIFICATIONS'),
-          _buildSettingsDivider(),
+          // _buildSettingsHeader('NOTIFICATIONS'),
+          // _buildSettingsDivider(),
 
-          SwitchListTile(
-            title: const Text(
-              'Push Notifications',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            subtitle: const Text('Receive alerts for new activity and updates.'),
-            value: _notificationsEnabled,
-            activeThumbColor: Color.fromRGBO(30, 64, 175, 1),
-            onChanged: (bool value) {
-              setState(() {
-                _notificationsEnabled = value;
-              });
-            },
-            secondary: Icon(
-              Icons.notifications_active,
-              color: Color.fromRGBO(30, 64, 175, 1),
-            ),
-          ),
+          // SwitchListTile(
+          //   title: const Text(
+          //     'Push Notifications',
+          //     style: TextStyle(fontWeight: FontWeight.w500),
+          //   ),
+          //   subtitle: const Text('Receive alerts for new activity and updates.'),
+          //   value: _notificationsEnabled,
+          //   activeThumbColor: Color.fromRGBO(30, 64, 175, 1),
+          //   onChanged: (bool value) {
+          //     setState(() {
+          //       _notificationsEnabled = value;
+          //     });
+          //   },
+          //   secondary: Icon(
+          //     Icons.notifications_active,
+          //     color: Color.fromRGBO(30, 64, 175, 1),
+          //   ),
+          // ),
 
-          _buildSettingsDivider(),
+          // _buildSettingsDivider(),
 
-          const SizedBox(height: 20),
+          // const SizedBox(height: 20),
           _buildSettingsHeader('ACCOUNT & SUPPORT'),
           _buildSettingsDivider(),
 
           _buildListTile(
             icon: Icons.person_outline,
-            title: 'Manage Account',
-            subtitle: 'Update your profile and security settings.',
+            title: 'Kelola Akun',
+            subtitle: 'Perbarui informasi akun Anda',
             onTap: () {
               Navigator.push(
                 context,
@@ -112,32 +111,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
           _buildListTile(
             icon: Icons.lock_outline,
-<<<<<<< Updated upstream
-            title: 'Privacy Policy',
-            onTap: () {
-
-            },
-=======
             title: 'Kebijakan Privasi',
             onTap: () {},
->>>>>>> Stashed changes
           ),
 
           _buildSettingsDivider(),
 
           _buildListTile(
             icon: Icons.info_outline,
-<<<<<<< Updated upstream
-            title: 'About GESTRA',
-            subtitle: 'Version 1.0.0',
+            title: 'tentang GESTRA',
+            subtitle: 'versi 1.0.0',
+
             onTap: () {
 
             },
-=======
-            title: 'tentang GESTRA',
-            subtitle: 'versi 1.0.0',
-            onTap: () {},
->>>>>>> Stashed changes
           ),
         ],
       ),
