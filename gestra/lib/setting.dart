@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'profile.dart';
 
 final Color primaryBlue = Colors.blue.shade800;
 
 class SettingsPage extends StatefulWidget {
   final void Function(int) onNavigate;
-  const SettingsPage({
-    super.key,
-    required this.onNavigate,
-  });
+  const SettingsPage({super.key, required this.onNavigate});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -56,8 +54,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
           _buildListTile(
             icon: Icons.language,
+
+            title: 'Language',
+            subtitle: 'English (US)',
+
             title: 'Bahasa',
             subtitle: 'Indonesia',
+
             onTap: () {
               
             },
@@ -97,7 +100,10 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Kelola Akun',
             subtitle: 'Perbarui informasi akun Anda',
             onTap: () {
-              widget.onNavigate(5);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
             },
           ),
 
@@ -106,9 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildListTile(
             icon: Icons.lock_outline,
             title: 'Kebijakan Privasi',
-            onTap: () {
-
-            },
+            onTap: () {},
           ),
 
           _buildSettingsDivider(),
@@ -117,6 +121,7 @@ class _SettingsPageState extends State<SettingsPage> {
             icon: Icons.info_outline,
             title: 'tentang GESTRA',
             subtitle: 'versi 1.0.0',
+
             onTap: () {
 
             },
@@ -149,15 +154,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }) {
     return ListTile(
       leading: Icon(icon, color: Color.fromRGBO(30, 64, 175, 1)),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: subtitle != null ? Text(subtitle) : null,
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: Colors.black54,
-      ),
+      trailing: const Icon(Icons.chevron_right, color: Colors.black54),
       onTap: onTap,
     );
   }
