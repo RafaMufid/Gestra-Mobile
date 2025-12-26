@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'profile.dart';
 
 final Color primaryBlue = Colors.blue.shade800;
 
 class SettingsPage extends StatefulWidget {
   final void Function(int) onNavigate;
-  const SettingsPage({
-    super.key,
-    required this.onNavigate,
-  });
+  const SettingsPage({super.key, required this.onNavigate});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -56,11 +54,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
           _buildListTile(
             icon: Icons.language,
+<<<<<<< Updated upstream
             title: 'Language',
             subtitle: 'English (US)',
             onTap: () {
               
             },
+=======
+            title: 'Bahasa',
+            subtitle: 'Indonesia',
+            onTap: () {},
+>>>>>>> Stashed changes
           ),
 
           const SizedBox(height: 20),
@@ -97,7 +101,10 @@ class _SettingsPageState extends State<SettingsPage> {
             title: 'Manage Account',
             subtitle: 'Update your profile and security settings.',
             onTap: () {
-              widget.onNavigate(5);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
             },
           ),
 
@@ -105,21 +112,32 @@ class _SettingsPageState extends State<SettingsPage> {
 
           _buildListTile(
             icon: Icons.lock_outline,
+<<<<<<< Updated upstream
             title: 'Privacy Policy',
             onTap: () {
 
             },
+=======
+            title: 'Kebijakan Privasi',
+            onTap: () {},
+>>>>>>> Stashed changes
           ),
 
           _buildSettingsDivider(),
 
           _buildListTile(
             icon: Icons.info_outline,
+<<<<<<< Updated upstream
             title: 'About GESTRA',
             subtitle: 'Version 1.0.0',
             onTap: () {
 
             },
+=======
+            title: 'tentang GESTRA',
+            subtitle: 'versi 1.0.0',
+            onTap: () {},
+>>>>>>> Stashed changes
           ),
         ],
       ),
@@ -149,15 +167,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }) {
     return ListTile(
       leading: Icon(icon, color: Color.fromRGBO(30, 64, 175, 1)),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: subtitle != null ? Text(subtitle) : null,
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: Colors.black54,
-      ),
+      trailing: const Icon(Icons.chevron_right, color: Colors.black54),
       onTap: onTap,
     );
   }
