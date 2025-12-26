@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  // final String baseUrl = "http://172.20.10.3:8000/api";
+  final String baseUrl = "http://192.168.1.101:8000/api";
   //yang mau pake hp pake ini aja yang atas ditutup
-  final String baseUrl = "http://192.168.100.9:8000/api";
+  // final String baseUrl = "http://10.0.2.2:8000/api";
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final url = Uri.parse("$baseUrl/login");
@@ -118,5 +118,33 @@ class AuthService {
     final response = await http.Response.fromStream(streamedResponse);
 
     return jsonDecode(response.body);
+  }
+
+  Future<bool> saveHistory(String token, String gestureName, double accuracy) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/history'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'gesture_name': gestureName,
+          'accuracy': accuracy,
+        }),
+      );
+
+      // 201 Created berarti berhasil disimpan
+      if (response.statusCode == 201) {
+        print("History saved successfully");
+        return true;
+      } else {
+        print("Failed to save history: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error saving history: $e");
+      return false;
+    }
   }
 }
