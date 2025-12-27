@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
+<<<<<<< HEAD
   final String baseUrl = "http://192.168.1.101:8000/api";
   //yang mau pake hp pake ini aja yang atas ditutup
   // final String baseUrl = "http://10.0.2.2:8000/api";
