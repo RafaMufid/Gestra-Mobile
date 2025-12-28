@@ -127,13 +127,15 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Video'),
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        foregroundColor: isDarkMode ? Colors.white :Colors.black,
         elevation: 1,
       ),
       body: SafeArea(

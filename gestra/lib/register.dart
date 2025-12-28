@@ -19,9 +19,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final Color primaryBlue = const Color.fromRGBO(30, 64, 175, 1);
+    final Color activeBlue = isDarkMode ? Colors.blueAccent : primaryBlue;
+    final Color textColor = isDarkMode ? Colors.white : Colors.black;
+    final Color labelColor = isDarkMode ? Colors.white70 : Colors.black54;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Center(
@@ -32,12 +38,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 Image.asset('assets/images/gestra.png', height: 80),
                 const SizedBox(height: 20),
 
-                const Text(
+                Text(
                   "Create an account",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: textColor,
                   ),
                 ),
 
@@ -46,18 +52,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 // USERNAME
                 TextField(
                   controller: nameController,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: "Username",
                     enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderSide: BorderSide(color: activeBlue),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: activeBlue, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -68,18 +71,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 // EMAIL
                 TextField(
                   controller: emailController,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: "Email",
                     enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderSide: BorderSide(color: activeBlue),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: activeBlue, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -93,9 +93,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   obscureText: !_showPassword,
                   decoration: InputDecoration(
                     labelText: "Password",
+                    labelStyle: TextStyle(color: labelColor),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _showPassword ? Icons.visibility : Icons.visibility_off,
+                        color: isDarkMode ? Colors.white70 : Colors.grey,
                       ),
                       onPressed: () {
                         setState(() {
@@ -104,15 +106,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderSide: BorderSide(color: activeBlue),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: activeBlue, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -124,13 +122,16 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextField(
                   controller: confirmPassController,
                   obscureText: !_showConfirmPassword,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: "Confirm Password",
+                    labelStyle: TextStyle(color: labelColor),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _showConfirmPassword
                             ? Icons.visibility
                             : Icons.visibility_off,
+                        color: isDarkMode ? Colors.white70 : Colors.grey,
                       ),
                       onPressed: () {
                         setState(() {
@@ -139,15 +140,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color.fromRGBO(30, 64, 175, 1)),
+                      borderSide: BorderSide(color: activeBlue),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
-                        width: 2,
-                      ),
+                      borderSide: BorderSide(color: activeBlue, width: 2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -161,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(30, 64, 175, 1),
+                      backgroundColor: activeBlue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -178,7 +175,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           confirmPass.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text("Please fill all fields")),
+                            content: Text("Please fill all fields"),
+                          ),
                         );
                         return;
                       }
@@ -186,26 +184,32 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (pass != confirmPass) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text("Passwords do not match")),
+                            content: Text("Passwords do not match"),
+                          ),
                         );
                         return;
                       }
 
                       final auth = AuthService();
-                      final result =
-                          await auth.register(name, email, pass, 'user');
+                      final result = await auth.register(
+                        name,
+                        email,
+                        pass,
+                        'user',
+                      );
 
                       if (result['token'] != null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Register successful!")),
+                          const SnackBar(content: Text("Register successful!")),
                         );
                         Navigator.pop(context);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text(
-                                  result["message"] ?? "Register failed")),
+                            content: Text(
+                              result["message"] ?? "Register failed",
+                            ),
+                          ),
                         );
                       }
                     },
@@ -221,13 +225,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account? "),
+                    Text(
+                      "Already have an account? ",
+                      style: TextStyle(color: labelColor),
+                    ),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         "Log in",
-                        style:
-                            TextStyle(color: Color.fromRGBO(30, 64, 175, 1)),
+                        style: TextStyle(color: activeBlue),
                       ),
                     ),
                   ],

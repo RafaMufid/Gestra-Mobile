@@ -83,26 +83,21 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Speech to Text'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
-      ),
+      appBar: AppBar(title: const Text('Speech to Text'), elevation: 1),
       body: Column(
         children: [
           Container(
             height: 140,
-            color: Colors.grey[200],
+            color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
             child: Center(
               child: Text(
                 _formatTime(_seconds),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black54,
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
                 ),
               ),
             ),
@@ -114,14 +109,19 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black26),
+                  border: Border.all(
+                    color: isDarkMode ? Colors.grey[700]! : Colors.black26,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   recognizedText.isEmpty
                       ? "Mulai bicara untuk melihat hasil..."
                       : recognizedText,
-                  style: const TextStyle(fontSize: 18),
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
                 ),
               ),
             ),
@@ -136,9 +136,12 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
                 height: 75,
                 width: 75,
                 decoration: BoxDecoration(
-                  color: isRecording ? Colors.white : Colors.red,
+                  color: isRecording ? Theme.of(context).cardColor : Colors.red,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey, width: 2),
+                  border: Border.all(
+                    color: isDarkMode ? Colors.grey[600]! : Colors.grey,
+                    width: 2,
+                  ),
                 ),
                 child: Icon(
                   isRecording ? Icons.stop : Icons.mic,

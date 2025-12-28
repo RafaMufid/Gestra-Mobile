@@ -39,6 +39,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     // Jika index 5 (Profile) aktif, kita tetap tandai Settings (4) sebagai aktif.
     final int navBarIndex = (_selectedIndex == 5) ? 4 : _selectedIndex;
     
@@ -69,8 +70,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         currentIndex: navBarIndex,
-        selectedItemColor: const Color(0xFF1E40AF),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: isDarkMode ? Colors.blueAccent : const Color(0xFF1E40AF),
+        unselectedItemColor: isDarkMode ? Colors.grey[400] : Colors.grey,
+        backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         onTap: _navigateToPage,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
