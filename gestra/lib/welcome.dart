@@ -7,8 +7,13 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    final Color primaryBlue = const Color.fromRGBO(30, 64, 175, 1);
+    final Color activeBlue = isDarkMode ? Colors.blueAccent : primaryBlue;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -20,12 +25,12 @@ class WelcomePage extends StatelessWidget {
                 height: 100,
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 "GESTRA",
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromRGBO(30, 64, 175, 1),
+                  color: activeBlue,
                   letterSpacing: 4,
                 ),
               ),
@@ -35,7 +40,7 @@ class WelcomePage extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                    backgroundColor: activeBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -60,7 +65,7 @@ class WelcomePage extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                    backgroundColor: activeBlue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
