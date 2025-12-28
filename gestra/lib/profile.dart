@@ -99,10 +99,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    final Color primaryBlue = const Color(0xFF1E40AF);
+    final Color activeBlue = isDarkMode ? Colors.blueAccent : primaryBlue;
+    final Color textColor = isDarkMode ? Colors.white : Colors.black;
+    final Color borderColor = isDarkMode ? Colors.grey[600]! : primaryBlue;
     final imageProvider = _getProfileImageProvider();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       appBar: AppBar(
         title: const Text('Profile'),
         leading: IconButton(
@@ -111,8 +117,8 @@ class _ProfilePageState extends State<ProfilePage> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        foregroundColor: isDarkMode ? Colors.white : Colors.black,
         elevation: 1,
       ),
       body: isLoading
@@ -173,26 +179,35 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 30),
 
-                      buildLabel("Nama"),
+                      buildLabel("Nama", textColor),
                       buildInfoBox(
                         controller: nameController,
                         isEditing: isEditing,
+                        textColor: textColor,
+                        borderColor: borderColor,
+                        isDarkMode: isDarkMode,
                       ),
                       const SizedBox(height: 20),
 
-                      buildLabel("Email"),
+                      buildLabel("Email", textColor),
                       buildInfoBox(
                         controller: emailController,
                         isEditing: isEditing,
+                        textColor: textColor,
+                        borderColor: borderColor,
+                        isDarkMode: isDarkMode,
                       ),
                       const SizedBox(height: 30),
 
-                      buildLabel("Password"),
+                      buildLabel("Password", textColor),
                       buildInfoBox(
                         controller: passwordController,
                         isEditing: isEditing,
                         isPassword: true,
                         showPassword: showPassword,
+                        textColor: textColor,
+                        borderColor: borderColor,
+                        isDarkMode: isDarkMode,
                         onTogglePassword: () {
                           setState(() => showPassword = !showPassword);
                         },
@@ -211,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E40AF),
+                          backgroundColor: activeBlue,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -303,12 +318,12 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Widget buildLabel(String text) {
+  Widget buildLabel(String text, Color color) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color),
       ),
     );
   }
@@ -319,19 +334,22 @@ class _ProfilePageState extends State<ProfilePage> {
     bool isPassword = false,
     bool showPassword = false,
     VoidCallback? onTogglePassword,
+    required Color textColor,
+    required Color borderColor,
+    required bool isDarkMode,
   }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF1E40AF)),
+        border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(5),
       ),
       child: isEditing
           ? TextField(
               controller: controller,
               obscureText: isPassword && !showPassword,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, color: textColor),
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 isDense: true,
@@ -347,14 +365,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     isPassword
                         ? (showPassword ? controller.text : "••••••••")
                         : controller.text,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16, color: textColor),
                   ),
                   if (isPassword)
                     GestureDetector(
                       onTap: onTogglePassword,
                       child: Icon(
                         showPassword ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.grey,
+                        color: isDarkMode ? Colors.white70 : Colors.grey,
                         size: 22,
                       ),
                     ),

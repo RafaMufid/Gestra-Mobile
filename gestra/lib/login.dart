@@ -19,8 +19,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final Color primaryBlue = const Color.fromRGBO(30, 64, 175, 1);
+    final Color activeBlue = isDarkMode ? Colors.blueAccent : primaryBlue;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Center(
@@ -30,28 +33,34 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 40),
                 Image.asset('assets/images/gestra.png', height: 80),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   "Welcome back",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
                 const SizedBox(height: 30),
                 TextField(
                   controller: nameController,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
                   decoration: InputDecoration(
                     labelText: "Email",
+                    labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
+                      borderSide: BorderSide(
+                        color: activeBlue,
                       ),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
+                      borderSide: BorderSide(
+                        color: activeBlue,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(6),
@@ -62,11 +71,16 @@ class _LoginPageState extends State<LoginPage> {
                 TextField(
                   controller: passController,
                   obscureText: _obscure,
+                  style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                   decoration: InputDecoration(
                     labelText: "Password",
+                    labelStyle: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscure ? Icons.visibility_off : Icons.visibility,
+                        color: isDarkMode ? Colors.white70 : Colors.grey,
                       ),
                       onPressed: () {
                         setState(() {
@@ -76,12 +90,12 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
+                        color: activeBlue,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: Color.fromRGBO(30, 64, 175, 1),
+                        color: activeBlue,
                         width: 2,
                       ),
                     ),
@@ -104,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromRGBO(30, 64, 175, 1),
+                      backgroundColor: activeBlue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -172,9 +186,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         "Sign Up",
-                        style: TextStyle(color: Color.fromRGBO(30, 64, 175, 1)),
+                        style: TextStyle(color: activeBlue),
                       ),
                     ),
                   ],
