@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SpeechToTextPage extends StatefulWidget {
   @override
@@ -14,6 +17,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   String recognizedText = "";
   Timer? _timer;
   int _seconds = 0;
+  bool isSpeechAvailable = false;
 
   @override
   void initState() {
@@ -22,8 +26,53 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
     _speech = stt.SpeechToText();
   }
 
+  Future<void> saveSpeechResult() async {
+    if (recognizedText.isEmpty) return;
+
+    // ambil token dari SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    print(token);
+    if (token == null) {
+      return;
+    }
+
+    final url = Uri.parse("http://172.20.10.2:8000/api/speech");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"text": recognizedText, "duration": _seconds}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Berhasil disimpan");
+      } else {
+        print("Gagal simpan: ${response.body}");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
   Future<void> requestMicPermission() async {
-    await Permission.microphone.request();
+    final micStatus = await Permission.microphone.request();
+    if (!micStatus.isGranted) {
+      debugPrint("Mic permission denied");
+      return;
+    }
+
+    isSpeechAvailable = await _speech.initialize(
+      onError: (e) => debugPrint("STT Error: $e"),
+      onStatus: (s) => debugPrint("ℹSTT Status: $s"),
+    );
+
+    debugPrint("Speech available: $isSpeechAvailable");
   }
 
   String _formatTime(int seconds) {
@@ -45,32 +94,41 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   }
 
   Future<void> _toggleRecording() async {
+    if (!isSpeechAvailable) return;
+
     if (!isRecording) {
-      bool available = await _speech.initialize(
-        onError: (e) => print("Error: $e"),
-        onStatus: (s) => print("Status: $s"),
+      setState(() {
+        isRecording = true;
+        recognizedText = "";
+      });
+
+      _startTimer();
+
+   
+      await _speech.listen(
+        localeId: "id_ID",
+        listenFor: const Duration(minutes: 2),
+        pauseFor: const Duration(seconds: 5),
+        partialResults: true,
+        cancelOnError: false,
+        onResult: (result) {
+          if (!mounted) return;
+          setState(() {
+            recognizedText = result.recognizedWords;
+          });
+        },
+        onSoundLevelChange: (level) {
+          debugPrint("🎤 Sound level: $level");
+        },
       );
-
-      if (available) {
-        setState(() {
-          isRecording = true;
-          recognizedText = "";
-        });
-
-        _startTimer();
-
-        _speech.listen(
-          localeId: "id_ID",
-          onResult: (result) {
-            if (!mounted) return;
-            setState(() => recognizedText = result.recognizedWords);
-          },
-        );
-      }
     } else {
       setState(() => isRecording = false);
       _speech.stop();
       _stopTimer();
+
+      if (recognizedText.trim().isNotEmpty) {
+      await saveSpeechResult();
+    }
     }
   }
 
@@ -102,7 +160,6 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
               ),
             ),
           ),
-
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -126,7 +183,6 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: GestureDetector(
