@@ -124,7 +124,12 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _item(dynamic item) {
     return ListTile(
-      leading: const Icon(Icons.history),
+      leading: Icon(
+      item['source'] == 'speech'
+          ? Icons.mic
+          : Icons.videocam,
+     ),
+
       title: Text(item['gesture_name']),
       subtitle: Text(
         'Accuracy: ${item['accuracy']}',

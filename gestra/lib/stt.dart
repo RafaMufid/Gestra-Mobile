@@ -38,7 +38,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
       return;
     }
 
-    final url = Uri.parse("http://172.20.10.2:8000/api/speech");
+    final url = Uri.parse("http://192.168.1.108:8000/api/speech");
 
     try {
       final response = await http.post(
@@ -51,6 +51,18 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        await http.post(
+          Uri.parse("http://192.168.1.108:8000/api/history"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: jsonEncode({
+            "gesture_name": recognizedText,
+            "accuracy": 1.0,          // atau pakai confidence kalau ada
+            "source": "speech",
+          }),
+        );
         print("Berhasil disimpan");
       } else {
         print("Gagal simpan: ${response.body}");
