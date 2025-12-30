@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-final String baseUrl = "http://192.168.1.108:8000/api";
+final String baseUrl = "http://192.168.1.101:8000/api";
   //yang mau pake hp pake ini aja yang atas ditutup
   //  final String baseUrl = "http://10.0.2.2:8000/api";
 
@@ -126,11 +126,13 @@ final String baseUrl = "http://192.168.1.108:8000/api";
         Uri.parse('$baseUrl/history'),
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
           'gesture_name': gestureName,
           'accuracy': accuracy,
+          'source': 'camera',
         }),
       );
 

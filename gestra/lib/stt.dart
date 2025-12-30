@@ -38,7 +38,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
       return;
     }
 
-    final url = Uri.parse("http://192.168.1.108:8000/api/speech");
+    final url = Uri.parse("http://192.168.1.101:8000/api/speech");
 
     try {
       final response = await http.post(
@@ -52,7 +52,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await http.post(
-          Uri.parse("http://192.168.1.108:8000/api/history"),
+          Uri.parse("http://192.168.1.101:8000/api/history"),
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer $token",
