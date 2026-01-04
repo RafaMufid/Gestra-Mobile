@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:gestra/profile.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Controller/AuthController.dart';
 
@@ -15,11 +18,21 @@ class _HomeContentPageState extends State<HomeContentPage> {
   final AuthService authService = AuthService();
   String name = '';
   String? photoUrl;
+  List<dynamic> lastTodayActivity = [];
+  bool isLoadingHistory = true;
+
+  final String baseUrl = 'http://192.168.1.101:8000/api';
+  // GANTI IP kalau pakai HP asli
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadUserData();
+    await _loadTodayHistory();
   }
 
   Future<void> _loadUserData() async {
@@ -38,6 +51,57 @@ class _HomeContentPageState extends State<HomeContentPage> {
       }
     } catch (e) {
       debugPrint("Error fetching profile: $e");
+    }
+  }
+
+  Future<void> _loadTodayHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        setState(() => isLoadingHistory = false);
+        return;
+      }
+
+      final res = await http.get(
+        Uri.parse('$baseUrl/history'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+
+        List<dynamic> todayActivities = [];
+        if (data['today'] != null) {
+          todayActivities = List.from(data['today']);
+        }
+
+        List<dynamic> twoLastest = todayActivities.take(2).toList();
+
+        if (mounted) {
+          setState(() {
+            lastTodayActivity = twoLastest;
+            isLoadingHistory = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            isLoadingHistory = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching last activity: $e");
+      if (mounted) {
+        setState(() {
+          isLoadingHistory = false;
+        });
+      }
     }
   }
 
@@ -91,7 +155,9 @@ class _HomeContentPageState extends State<HomeContentPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ProfilePage()),
+                        MaterialPageRoute(
+                          builder: (context) => const ProfilePage(),
+                        ),
                       );
                     },
                     child: CircleAvatar(
@@ -233,7 +299,7 @@ class _HomeContentPageState extends State<HomeContentPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Aktivitas Terakhir",
+                    "Aktivitas Terakhir Hari Ini",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -249,221 +315,45 @@ class _HomeContentPageState extends State<HomeContentPage> {
                   ),
                 ],
               ),
-              _buildRecentItem(
-                "Nama saya adalah John Marston",
-                "Terjemahan Kamera",
-                "2 menit lalu",
-                cardColor,
-                textColor,
-                activeColor,
-              ),
-              const SizedBox(height: 10),
-              _buildRecentItem(
-                "Saya suka membuat robot mainan",
-                "Terjemahan Suara",
-                "1 jam lalu",
-                cardColor,
-                textColor,
-                activeColor,
-              ),
+
+              if (isLoadingHistory)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else if (lastTodayActivity.isEmpty)
+                _buildEmptyPlaceholder(cardColor, isDarkMode)
+              else
+                Column(
+                  children: lastTodayActivity.map((activity) {
+                    String gestureName =
+                        activity['gesture_name'] ?? 'Tidak Diketahui';
+                    String source = activity['source'] == 'speech'
+                        ? 'Suara'
+                        : 'Video';
+                    String time = _formatTimeAgo(activity['created_at']);
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _buildRecentItem(
+                        gestureName,
+                        source,
+                        time,
+                        cardColor,
+                        textColor,
+                        activeColor,
+                      ),
+                    );
+                  }).toList(),
+                ),
+
+                const SizedBox(height: 50),
             ],
           ),
         ),
       ),
-      // appBar: AppBar(
-      //   title: const Text('Home'),
-      //   automaticallyImplyLeading: false,
-      //   backgroundColor: Colors.transparent,
-      //   foregroundColor: primaryColor,
-      //   elevation: 0,
-      //   centerTitle: true,
-      //   titleTextStyle: const TextStyle(
-      //     color: Colors.blue,
-      //     fontSize: 20,
-      //     fontWeight: FontWeight.bold,
-      //   ),
-      // ),
-      // body: Stack(
-      //   children: [
-      //     //gradient
-      //     Container(
-      //       decoration: BoxDecoration(
-      //         gradient: LinearGradient(
-      //           begin: Alignment.topLeft,
-      //           end: Alignment.bottomRight,
-      //           colors: isDarkMode
-      //               ? [const Color(0xFF121212), const Color(0xFF1E1E1E)]
-      //               : [const Color(0xFFF0F4FF), const Color(0xFFE1E8F5)],
-      //         ),
-      //       ),
-      //     ),
-
-      //     //blobs
-      //     Positioned(
-      //       top: -100,
-      //       right: -100,
-      //       child: Container(
-      //         width: 300,
-      //         height: 300,
-      //         decoration: BoxDecoration(
-      //           shape: BoxShape.circle,
-      //           gradient: RadialGradient(
-      //             colors: [
-      //               primaryColor.withValues(alpha: 0.2),
-      //               primaryColor.withValues(alpha: 0.0),
-      //             ],
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-      //     Positioned(
-      //       bottom: -50,
-      //       left: -80,
-      //       child: Container(
-      //         width: 350,
-      //         height: 350,
-      //         decoration: BoxDecoration(
-      //           shape: BoxShape.circle,
-      //           gradient: RadialGradient(
-      //             colors: [
-      //               primaryColor.withValues(alpha: 0.15),
-      //               primaryColor.withValues(alpha: 0.0),
-      //             ],
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-
-      //     //image gestra
-      //     Center(
-      //       child: Opacity(
-      //         opacity: 0.8,
-      //         child: Container(
-      //           decoration: const BoxDecoration(
-      //             image: DecorationImage(
-      //               image: AssetImage('assets/images/gestra.png'),
-      //               fit: BoxFit.scaleDown,
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-
-      //     //isi
-      //     SafeArea(
-      //       child: Center(
-      //         child: Stack(
-      //           children: [
-      //             Positioned(
-      //               top: 30,
-      //               left: 0,
-      //               right: 0,
-      //               bottom: 0,
-      //               child: Column(
-      //                 crossAxisAlignment: CrossAxisAlignment.center,
-      //                 mainAxisAlignment: MainAxisAlignment.start,
-      //                 children: [
-      //                   AnimatedSwitcher(
-      //                     duration: const Duration(milliseconds: 300),
-      //                     child: Text(
-      //                       name.isEmpty ? "Halo Pengguna!" : "Halo, $name!",
-      //                       key: ValueKey<String>(name),
-      //                       style: TextStyle(
-      //                         fontSize: 26,
-      //                         fontWeight: FontWeight.w800,
-      //                         color: primaryColor,
-      //                       ),
-      //                     ),
-      //                   ),
-      //                   Text(
-      //                     "Selamat Datang di GESTRA",
-      //                     style: TextStyle(
-      //                       fontSize: 22,
-      //                       fontWeight: FontWeight.bold,
-      //                       color: primaryColor,
-      //                     ),
-      //                   ),
-      //                   const SizedBox(height: 15),
-      //                   Flexible(
-      //                     child: Padding(
-      //                       padding: const EdgeInsets.symmetric(horizontal: 40),
-      //                       child: Text(
-      //                         "Tempat di mana Anda dapat berinteraksi lancar dengan teman Tuli, tanpa hambatan bahasa isyarat.",
-      //                         textAlign: TextAlign.center,
-      //                         style: TextStyle(
-      //                           fontSize: 13,
-      //                           height: 1.5,
-      //                           fontWeight: FontWeight.w500,
-      //                           color: subTextColor,
-      //                         ),
-      //                       ),
-      //                     ),
-      //                   ),
-      //                 ],
-      //               ),
-      //             ),
-      //             Positioned(
-      //               bottom: 20,
-      //               left: 20,
-      //               right: 20,
-      //               child: Column(
-      //                 children: [
-      //                   Text(
-      //                     'Last Translated',
-      //                     style: TextStyle(
-      //                       fontSize: 16,
-      //                       fontWeight: FontWeight.bold,
-      //                       color: isDarkMode
-      //                           ? Colors.white70
-      //                           : primaryColor.withValues(alpha: 0.8),
-      //                     ),
-      //                   ),
-      //                   const SizedBox(height: 10),
-      //                   Container(
-      //                     decoration: BoxDecoration(
-      //                       boxShadow: [
-      //                         BoxShadow(
-      //                           color: isDarkMode
-      //                               ? Colors.black.withValues(alpha: 0.3)
-      //                               : Colors.blueGrey.withValues(alpha: 0.1),
-      //                           blurRadius: 15,
-      //                           offset: const Offset(0, 5),
-      //                         ),
-      //                       ],
-      //                     ),
-      //                     child: ListTile(
-      //                       leading: Icon(
-      //                         Icons.history,
-      //                         color: textColor,
-      //                       ),
-      //                       title: const Text(
-      //                         'Nama saya adalah John Marston',
-      //                         style: TextStyle(fontWeight: FontWeight.w600),
-      //                       ),
-      //                       subtitle: const Text(
-      //                         'Terakhir diterjemahkan: 5 menit lalu',
-      //                       ),
-      //                       tileColor: Colors.white.withValues(alpha: 0.9),
-      //                       shape: RoundedRectangleBorder(
-      //                         borderRadius: BorderRadius.circular(15),
-      //                         side: BorderSide(
-      //                           color: primaryColor.withValues(alpha: 0.1),
-      //                         ),
-      //                       ),
-      //                       onTap: () {
-      //                         widget.onNavigate(0);
-      //                       },
-      //                     ),
-      //                   ),
-      //                 ],
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 
@@ -472,6 +362,20 @@ class _HomeContentPageState extends State<HomeContentPage> {
     if (hour < 12) return 'Selamat Pagi';
     if (hour < 17) return 'Selamat Siang';
     return 'Selamat Malam';
+  }
+
+  String _formatTimeAgo(String? dateString) {
+    if (dateString == null) return '';
+    try {
+      DateTime date = DateTime.parse(dateString);
+      Duration diff = DateTime.now().difference(date);
+      if (diff.inDays > 0) return '${diff.inDays} hari lalu';
+      if (diff.inHours > 0) return '${diff.inHours} jam lalu';
+      if (diff.inMinutes > 0) return '${diff.inMinutes} menit lalu';
+      return 'Baru saja';
+    } catch (e) {
+      return '';
+    }
   }
 
   Widget _buildQuickActionCard({
@@ -528,6 +432,44 @@ class _HomeContentPageState extends State<HomeContentPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyPlaceholder(Color cardColor, bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.history_toggle_off,
+            size: 40,
+            color: isDark ? Colors.white24 : Colors.grey[300],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Belum ada aktivitas hari ini.",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white54 : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Ayo mulai terjemahkan bahasa isyarat!",
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? Colors.white30 : Colors.grey[400],
+            ),
+          ),
+        ],
       ),
     );
   }

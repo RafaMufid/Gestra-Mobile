@@ -183,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 30),
 
-                      buildLabel("Nama", textColor),
+                      buildLabel("Username", textColor),
                       buildInfoBox(
                         controller: nameController,
                         isEditing: isEditing,
@@ -226,6 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           } else {
                             setState(() {
                               isEditing = true;
+                              showPassword = true;
                             });
                           }
                         },
@@ -281,7 +282,6 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => isLoading = true);
 
     try {
-      // 1. Update Text (Nama, Email, Password)
       await authService.updateProfile(
         token: token,
         username: nameController.text.trim(),
@@ -295,7 +295,6 @@ class _ProfilePageState extends State<ProfilePage> {
         await prefs.setString("password", passwordController.text.trim());
       }
 
-      // 2. Update Foto (Jika ada yang dipilih)
       if (pickedImagePath != null) {
         print("Mulai upload foto...");
         try {
@@ -309,11 +308,13 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       }
 
-      // 3. Refresh Data
       await _loadProfile();
 
       if (mounted) {
-        setState(() => isEditing = false);
+        setState(() {
+          isEditing = false;
+          showPassword = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Profile berhasil diperbarui!"),
