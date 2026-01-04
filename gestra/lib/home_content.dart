@@ -203,7 +203,7 @@ class _HomeContentPageState extends State<HomeContentPage> {
                   _buildQuickActionCard(
                     context: context,
                     icon: Icons.mic,
-                    label: "Text-to-Speech",
+                    label: "Speech-to-Text",
                     color: Colors.orange.shade100,
                     iconColor: Colors.orange.shade800,
                     onTap: () => widget.onNavigate(3),
