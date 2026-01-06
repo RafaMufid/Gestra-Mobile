@@ -91,9 +91,13 @@ class _ProfilePageState extends State<ProfilePage> {
     if (profileImageBytes != null) {
       return MemoryImage(profileImageBytes!);
     }
-    if (photoUrl != null && photoUrl!.isNotEmpty) {
-      return NetworkImage(photoUrl!);
+    if (photoUrl != null && photoUrl!.isNotEmpty && photoUrl != "0") {
+    // Pastikan URL valid (mengandung http)
+    if (photoUrl!.startsWith("http")) {
+       // Tambahkan timestamp agar cache refresh otomatis
+       return NetworkImage("$photoUrl?v=${DateTime.now().millisecondsSinceEpoch}");
     }
+  }
     return null;
   }
 
@@ -292,7 +296,16 @@ class _ProfilePageState extends State<ProfilePage> {
       }
 
       if (pickedImagePath != null) {
-        await authService.updatePhoto(token: token, filePath: pickedImagePath!);
+        print("Mulai upload foto...");
+        try {
+          final resPhoto = await authService.updatePhoto(
+            token: token,
+            filePath: pickedImagePath!,
+          );
+          print("HASIL UPLOAD FOTO: $resPhoto"); // <--- Cek log ini nanti!
+        } catch (e) {
+          print("ERROR UPLOAD FOTO: $e");
+        }
       }
 
       await _loadProfile();
