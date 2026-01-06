@@ -155,7 +155,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text('Speech to Text'), elevation: 1),
+      appBar: AppBar(title: const Text('Speech to Text'), automaticallyImplyLeading: false, elevation: 1),
       body: Column(
         children: [
           Container(
