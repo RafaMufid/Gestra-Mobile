@@ -5,12 +5,15 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gestra/Model/detection_model.dart';
 import 'package:gestra/Controller/AuthController.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class VideoController extends ChangeNotifier {
   VideoPageState state = VideoPageState();
   
   CameraController? cameraController;
   final AuthService _authService = AuthService();
+
+  FlutterTts flutterTts = FlutterTts();
   
   String _lastDetectedLabel = "";
   int _consecutiveFrames = 0;
@@ -22,8 +25,15 @@ class VideoController extends ChangeNotifier {
 
   Future<void> initializeSystem() async {
     await _requestPermission();
+    await _initTts();
     await _loadModel();
     await _initializeCamera();
+  }
+
+  Future<void> _initTts() async {
+    await flutterTts.setLanguage("id-ID");
+    await flutterTts.setPitch(1.0);
+    await flutterTts.setSpeechRate(0.5);
   }
 
   Future<void> _requestPermission() async {
@@ -124,6 +134,16 @@ class VideoController extends ChangeNotifier {
       }
     } else {
       _consecutiveFrames = 0;
+    }
+  }
+
+  Future<void> speakSentence() async {
+    if (state.sentenceBuffer.isNotEmpty) {
+      await flutterTts.speak(state.sentenceBuffer);
+    } else {
+      if (onShowMessage != null) {
+        onShowMessage!("Tidak ada teks untuk dibaca", true);
+      }
     }
   }
 
