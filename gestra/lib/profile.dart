@@ -92,14 +92,11 @@ class _ProfilePageState extends State<ProfilePage> {
       return MemoryImage(profileImageBytes!);
     }
     if (photoUrl != null && photoUrl!.isNotEmpty && photoUrl != "0") {
-      // Pastikan URL valid (mengandung http)
-      if (photoUrl!.startsWith("http")) {
-        // Tambahkan timestamp agar cache refresh otomatis
-        return NetworkImage(
-          "$photoUrl?v=${DateTime.now().millisecondsSinceEpoch}",
-        );
-      }
+
+    if (photoUrl!.startsWith("http")) {
+       return NetworkImage("$photoUrl?v=${DateTime.now().millisecondsSinceEpoch}");
     }
+  }  
     return null;
   }
 
@@ -123,6 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Navigator.pop(context);
           },
         ),
+        automaticallyImplyLeading: true,
         backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         elevation: 1,

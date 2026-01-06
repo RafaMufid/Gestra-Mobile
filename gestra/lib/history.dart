@@ -18,7 +18,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   //final String baseUrl = 'http://10.0.2.2:8000/api'; 
   // GANTI IP kalau pakai HP asli
-    final String baseUrl = 'http://192.168.1.101:8000/api';
+  final String baseUrl = 'http://192.168.1.101:8000/api';
 
   @override
   void initState() {
@@ -94,6 +94,7 @@ class _HistoryPageState extends State<HistoryPage> {
             onPressed: loadHistory,
           ),
         ],
+        automaticallyImplyLeading: false,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
