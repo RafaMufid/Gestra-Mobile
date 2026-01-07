@@ -29,6 +29,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   Future<void> saveSpeechResult() async {
     if (recognizedText.isEmpty) return;
 
+    // ambil token dari SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -37,7 +38,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
       return;
     }
 
-    final url = Uri.parse("http://192.168.1.101:8000/api/speech");
+    final url = Uri.parse("http://10.150.100.232:8000/api/speech");
 
     try {
       final response = await http.post(
@@ -51,14 +52,14 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await http.post(
-          Uri.parse("http://192.168.1.101:8000/api/history"),
+          Uri.parse("http://10.150.100.232:8000/api/history"),
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer $token",
           },
           body: jsonEncode({
             "gesture_name": recognizedText,
-            "accuracy": 1.0,         
+            "accuracy": 1.0,          // atau pakai confidence kalau ada
             "source": "speech",
           }),
         );
@@ -129,7 +130,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
           });
         },
         onSoundLevelChange: (level) {
-          debugPrint(" Sound level: $level");
+          debugPrint("🎤 Sound level: $level");
         },
       );
     } else {

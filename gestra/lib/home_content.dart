@@ -21,8 +21,9 @@ class _HomeContentPageState extends State<HomeContentPage> {
   List<dynamic> lastTodayActivity = [];
   bool isLoadingHistory = true;
 
-  final String baseUrl = 'http://192.168.1.101:8000/api';
+  final String baseUrl = 'http://10.150.100.232:8000/api';
   // GANTI IP kalau pakai HP asli
+  // final String baseUrl = "http://10.0.2.2:8000/api";
 
   @override
   void initState() {

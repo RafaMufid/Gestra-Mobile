@@ -91,24 +91,11 @@ class _ProfilePageState extends State<ProfilePage> {
     if (profileImageBytes != null) {
       return MemoryImage(profileImageBytes!);
     }
-    if (photoUrl != null && photoUrl!.isNotEmpty && photoUrl != "0") {
-
-    if (photoUrl!.startsWith("http")) {
-       return NetworkImage("$photoUrl?v=${DateTime.now().millisecondsSinceEpoch}");
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return NetworkImage(photoUrl!);
     }
-  }
     return null;
   }
-
-  // ImageProvider? _getProfileImageProvider() {
-  //   if (profileImageBytes != null) {
-  //     return MemoryImage(profileImageBytes!);
-  //   }
-  //   if (photoUrl != null && photoUrl!.isNotEmpty) {
-  //     return NetworkImage(photoUrl!);
-  //   }
-  //   return null;
-  // }
 
   @override
   Widget build(BuildContext context) {
