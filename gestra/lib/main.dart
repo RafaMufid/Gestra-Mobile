@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: themeManager,
+      animation: themeManager,  
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
