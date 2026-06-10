@@ -1,10 +1,9 @@
-name: Buil & Release APK
+name: Build & Release APK
 
 on: 
   push:
-    branches:
-      tags:
-        - 'v*'
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -29,12 +28,12 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run:
+        run: |
           cd gestra
           flutter pub get
 
       - name: Build APK
-        run:
+        run: |
           cd gestra
           flutter build apk --release
 
