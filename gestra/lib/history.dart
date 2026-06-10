@@ -17,8 +17,6 @@ class _HistoryPageState extends State<HistoryPage> {
   bool isLoading = true;
   String? token;
 
-  // final String baseUrl = AuthService.baseUrl;
-
   @override
   void initState() {
     super.initState();

@@ -30,6 +30,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   Future<void> saveSpeechResult() async {
     if (recognizedText.isEmpty) return;
 
+    // ambil token dari SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -59,7 +60,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
           },
           body: jsonEncode({
             "gesture_name": recognizedText,
-            "accuracy": 1.0,         
+            "accuracy": 1.0,          // atau pakai confidence kalau ada
             "source": "speech",
           }),
         );
@@ -130,7 +131,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
           });
         },
         onSoundLevelChange: (level) {
-          debugPrint(" Sound level: $level");
+          debugPrint("🎤 Sound level: $level");
         },
       );
     } else {
