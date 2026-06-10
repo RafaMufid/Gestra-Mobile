@@ -21,10 +21,6 @@ class _HomeContentPageState extends State<HomeContentPage> {
   List<dynamic> lastTodayActivity = [];
   bool isLoadingHistory = true;
 
-  final String baseUrl = 'http://10.150.100.232:8000/api';
-  // GANTI IP kalau pakai HP asli
-  // final String baseUrl = "http://10.0.2.2:8000/api";
-
   @override
   void initState() {
     super.initState();
@@ -66,7 +62,7 @@ class _HomeContentPageState extends State<HomeContentPage> {
       }
 
       final res = await http.get(
-        Uri.parse('$baseUrl/history'),
+        Uri.parse('${AuthService.baseUrl}/history'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
