@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Controller/AuthController.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -16,9 +17,7 @@ class _HistoryPageState extends State<HistoryPage> {
   bool isLoading = true;
   String? token;
 
-  //final String baseUrl = 'http://10.0.2.2:8000/api'; 
-  // GANTI IP kalau pakai HP asli
-  final String baseUrl = 'http://192.168.1.101:8000/api';
+  // final String baseUrl = AuthService.baseUrl;
 
   @override
   void initState() {
@@ -44,7 +43,7 @@ class _HistoryPageState extends State<HistoryPage> {
     setState(() => isLoading = true);
 
     final res = await http.get(
-      Uri.parse('$baseUrl/history'),
+      Uri.parse('${AuthService.baseUrl}/history'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -70,7 +69,7 @@ class _HistoryPageState extends State<HistoryPage> {
   //  DELETE 
   Future<void> deleteHistory(int id) async {
     await http.delete(
-      Uri.parse('$baseUrl/history/$id'),
+      Uri.parse('${AuthService.baseUrl}/history/$id'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
