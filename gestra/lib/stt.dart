@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'Controller/AuthController.dart';
 
 class SpeechToTextPage extends StatefulWidget {
   @override
@@ -38,7 +39,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
       return;
     }
 
-    final url = Uri.parse("http://192.168.1.101:8000/api/speech");
+    final url = Uri.parse("${AuthService.baseUrl}/speech");
 
     try {
       final response = await http.post(
@@ -52,7 +53,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await http.post(
-          Uri.parse("http://192.168.1.101:8000/api/history"),
+          Uri.parse("${AuthService.baseUrl}/history"),
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer $token",
@@ -155,7 +156,7 @@ class _SpeechToTextPageState extends State<SpeechToTextPage> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text('Speech to Text'), elevation: 1),
+      appBar: AppBar(title: const Text('Speech to Text'), automaticallyImplyLeading: false, elevation: 1),
       body: Column(
         children: [
           Container(

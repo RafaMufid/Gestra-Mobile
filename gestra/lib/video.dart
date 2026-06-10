@@ -173,50 +173,61 @@ class _VideoPageState extends State<VideoPage> {
                       
                       const SizedBox(height: 20),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          // MULAI STOP
-                          _buildActionButton(
-                            icon: _controller.state.isRecording ? Icons.stop : Icons.play_arrow, 
-                            label: _controller.state.isRecording ? "STOP" : "MULAI", 
-                            color: _controller.state.isRecording ? Colors.redAccent : Colors.greenAccent, 
-                            onTap: () => _controller.toggleRecording()
-                          ),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // MULAI STOP
+                            _buildActionButton(
+                              icon: _controller.state.isRecording ? Icons.stop : Icons.play_arrow, 
+                              label: _controller.state.isRecording ? "STOP" : "MULAI", 
+                              color: _controller.state.isRecording ? Colors.redAccent : Colors.greenAccent, 
+                              onTap: () => _controller.toggleRecording()
+                            ),
+                        
+                            // SPASI
+                            _buildActionButton(
+                              icon: Icons.space_bar, 
+                              label: "SPASI", 
+                              color: Colors.blueAccent, 
+                              onTap: () => _controller.addSpace()
+                            ),
+                        
+                            // HAPUS
+                            _buildActionButton(
+                              icon: Icons.backspace, 
+                              label: "HAPUS", 
+                              color: Colors.orangeAccent, 
+                              onTap: () => _controller.backspace()
+                            ),
+                        
+                            // RESET
+                            _buildActionButton(
+                              icon: Icons.refresh, 
+                              label: "RESET", 
+                              color: Colors.redAccent, 
+                              onTap: () => _controller.clearSentence()
+                            ),
 
-                          // SPASI
-                          _buildActionButton(
-                            icon: Icons.space_bar, 
-                            label: "SPASI", 
-                            color: Colors.blueAccent, 
-                            onTap: () => _controller.addSpace()
-                          ),
-
-                          // HAPUS
-                          _buildActionButton(
-                            icon: Icons.backspace, 
-                            label: "HAPUS", 
-                            color: Colors.orangeAccent, 
-                            onTap: () => _controller.backspace()
-                          ),
-
-                          // RESET
-                          _buildActionButton(
-                            icon: Icons.refresh, 
-                            label: "RESET", 
-                            color: Colors.redAccent, 
-                            onTap: () => _controller.clearSentence()
-                          ),
-
-                          // SIMPAN
-                          _buildActionButton(
-                            icon: Icons.cloud_upload, 
-                            label: "SIMPAN", 
-                            color: Colors.cyanAccent, 
-                            onTap: () => _controller.saveSentenceToBackend(),
-                            isLoading: _controller.state.isSaving
-                          ),
-                        ],
+                            // TTS
+                            _buildActionButton(
+                              icon: Icons.volume_up, 
+                              label: "SUARA", 
+                              color: Colors.purpleAccent, 
+                              onTap: () => _controller.speakSentence()
+                            ),
+                        
+                            // SIMPAN
+                            _buildActionButton(
+                              icon: Icons.cloud_upload, 
+                              label: "SIMPAN", 
+                              color: Colors.cyanAccent, 
+                              onTap: () => _controller.saveSentenceToBackend(),
+                              isLoading: _controller.state.isSaving
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

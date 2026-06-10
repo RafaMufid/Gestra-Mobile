@@ -100,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     final Color primaryBlue = const Color(0xFF1E40AF);
     final Color activeBlue = isDarkMode ? Colors.blueAccent : primaryBlue;
     final Color textColor = isDarkMode ? Colors.white : Colors.black;
@@ -117,6 +117,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Navigator.pop(context);
           },
         ),
+        automaticallyImplyLeading: true,
         backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         foregroundColor: isDarkMode ? Colors.white : Colors.black,
         elevation: 1,
@@ -179,7 +180,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 30),
 
-                      buildLabel("Nama", textColor),
+                      buildLabel("Username", textColor),
                       buildInfoBox(
                         controller: nameController,
                         isEditing: isEditing,
@@ -222,6 +223,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           } else {
                             setState(() {
                               isEditing = true;
+                              showPassword = true;
                             });
                           }
                         },
@@ -277,7 +279,6 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => isLoading = true);
 
     try {
-      // 1. Update Text (Nama, Email, Password)
       await authService.updateProfile(
         token: token,
         username: nameController.text.trim(),
@@ -291,16 +292,26 @@ class _ProfilePageState extends State<ProfilePage> {
         await prefs.setString("password", passwordController.text.trim());
       }
 
-      // 2. Update Foto (Jika ada yang dipilih)
       if (pickedImagePath != null) {
-        await authService.updatePhoto(token: token, filePath: pickedImagePath!);
+        print("Mulai upload foto...");
+        try {
+          final resPhoto = await authService.updatePhoto(
+            token: token,
+            filePath: pickedImagePath!,
+          );
+          print("HASIL UPLOAD FOTO: $resPhoto");
+        } catch (e) {
+          print("ERROR UPLOAD FOTO: $e");
+        }
       }
 
-      // 3. Refresh Data
       await _loadProfile();
 
       if (mounted) {
-        setState(() => isEditing = false);
+        setState(() {
+          isEditing = false;
+          showPassword = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Profile berhasil diperbarui!"),
@@ -323,7 +334,11 @@ class _ProfilePageState extends State<ProfilePage> {
       alignment: Alignment.centerLeft,
       child: Text(
         text,
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: color,
+        ),
       ),
     );
   }
