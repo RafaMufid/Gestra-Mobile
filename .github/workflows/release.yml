@@ -32,6 +32,14 @@ jobs:
           cd gestra
           flutter pub get
 
+      - name: Patch flutter_tflite
+        run: |
+          FILE=$(find ~/.pub-cache -path "*flutter_tflite-1.0.1/android/build.gradle" | head -1)
+          if [ -f "$FILE" ]; then
+            sed -i '/android {/a\
+                namespace "sq.flutter.tflite"' "$FILE"
+          fi
+
       - name: Build APK
         run: |
           cd gestra
