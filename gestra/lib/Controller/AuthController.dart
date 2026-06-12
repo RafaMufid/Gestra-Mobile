@@ -41,8 +41,8 @@ static const baseUrl = "https://web.gestra.my.id/api";
       }),
     );
 
-    print("STATUS CODE: ${response.statusCode}");
-    print("BODY: ${response.body}");
+    print("STATUS CODE: \\${response.statusCode}");
+    print("BODY: \\${response.body}");
 
     return jsonDecode(response.body);
   }
@@ -58,7 +58,7 @@ static const baseUrl = "https://web.gestra.my.id/api";
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load profile: ${response.statusCode}');
+      throw Exception('Failed to load profile: \\${response.statusCode}');
     }
   }
 
@@ -86,8 +86,8 @@ static const baseUrl = "https://web.gestra.my.id/api";
       body: jsonEncode(body),
     );
 
-    print("UPDATE PROFILE STATUS: ${response.statusCode}");
-    print("UPDATE PROFILE BODY: ${response.body}");
+    print("UPDATE PROFILE STATUS: \\${response.statusCode}");
+    print("UPDATE PROFILE BODY: \\${response.body}");
 
     final data = jsonDecode(response.body);
 
@@ -139,7 +139,7 @@ static const baseUrl = "https://web.gestra.my.id/api";
         print("History saved successfully");
         return true;
       } else {
-        print("Failed to save history: ${response.body}");
+        print("Failed to save history: \\${response.body}");
         return false;
       }
     } catch (e) {
