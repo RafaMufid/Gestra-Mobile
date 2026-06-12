@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build & Release
@@ -31,6 +34,37 @@ jobs:
         run: |
           cd gestra
           flutter pub get
+
+      - name: Flutter Doctor
+        run: |
+          flutter doctor -v
+
+      - name: Patch flutter_tflite
+        run: |
+          FILE=$(find ~/.pub-cache -path "*flutter_tflite-1.0.1/android/build.gradle" | head -1)
+
+          echo "PATCHING: $FILE"
+
+          if [ -f "$FILE" ]; then
+            # Tambah namespace jika belum ada
+            sed -i '/android {/a\
+                namespace "sq.flutter.tflite"' "$FILE"
+
+            # Naikkan compileSdkVersion
+            sed -i 's/compileSdkVersion 28/compileSdkVersion 34/g' "$FILE"
+
+            # Naikkan targetSdkVersion bila belum ada
+            sed -i '/minSdkVersion 19/a\
+                targetSdkVersion 34' "$FILE"
+
+            echo "===== PATCHED FILE ====="
+            cat "$FILE"
+          fi 
+
+      - name: Verify flutter_tflite patch
+        run: |
+          FILE=$(find ~/.pub-cache -path "*flutter_tflite-1.0.1/android/build.gradle" | head -1)
+          cat "$FILE"
 
       - name: Build APK
         run: |
