@@ -1,6 +1,9 @@
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tflite/flutter_tflite.dart';
+import 'package:flutter/services.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gestra/Model/detection_model.dart';
@@ -15,11 +18,17 @@ class VideoController extends ChangeNotifier {
 
   FlutterTts flutterTts = FlutterTts();
   
+  Interpreter? _interpreter;
+  List<String> _labels = [];
+  
   String _lastDetectedLabel = "";
   int _consecutiveFrames = 0;
   bool _isModelLoaded = false;
 
   String _lastAddedChar = "";
+
+  // Error message for UI
+  String? modelError;
 
   Function(String message, bool isError)? onShowMessage;
 
@@ -27,6 +36,7 @@ class VideoController extends ChangeNotifier {
     await _requestPermission();
     await _initTts();
     await _loadModel();
+    await _loadLabels();
     await _initializeCamera();
   }
 
@@ -42,17 +52,26 @@ class VideoController extends ChangeNotifier {
 
   Future<void> _loadModel() async {
     try {
-      String? res = await Tflite.loadModel(
-        model: "assets/model_sibi.tflite",
-        labels: "assets/labels.txt",
-        numThreads: 1,
-        isAsset: true,
-        useGpuDelegate: false,
-      );
-      _isModelLoaded = res != null;
-      print("Model Loaded: $res");
+      _interpreter = await Interpreter.fromAsset('model_sibi.tflite');
+      _isModelLoaded = true;
+      debugPrint("Model loaded successfully");
     } catch (e) {
-      print("Error loading model: $e");
+      _isModelLoaded = false;
+      modelError = "Gagal memuat model: $e";
+      debugPrint("Error loading model: $e");
+      if (onShowMessage != null) {
+        onShowMessage!("Gagal memuat model deteksi", true);
+      }
+    }
+  }
+
+  Future<void> _loadLabels() async {
+    try {
+      final labelData = await rootBundle.loadString('assets/labels.txt');
+      _labels = labelData.split('\n').where((l) => l.trim().isNotEmpty).toList();
+      debugPrint("Labels loaded: ${_labels.length} classes");
+    } catch (e) {
+      debugPrint("Error loading labels: $e");
     }
   }
 
@@ -74,48 +93,107 @@ class VideoController extends ChangeNotifier {
     state.isCameraInitialized = true;
     notifyListeners();
 
-    cameraController!.startImageStream((CameraImage img) {
+    cameraController!.startImageStream((CameraImage image) {
       if (state.isRecording && !state.isBusy && _isModelLoaded) {
         state.isBusy = true;
-        _runModelOnFrame(img);
+        _runModelOnFrame(image);
       }
     });
   }
 
-  Future<void> _runModelOnFrame(CameraImage img) async {
-    try {
-      var recognitions = await Tflite.runModelOnFrame(
-        bytesList: img.planes.map((plane) {
-          return plane.bytes;
-        }).toList(),
-        imageHeight: img.height,
-        imageWidth: img.width,
-        imageMean: 127.5,
-        imageStd: 127.5,
-        rotation: 270,
-        numResults: 1,
-        threshold: 0.4,
-        asynch: true,
-      );
+  /// Convert CameraImage (YUV420) to img.Image, then resize to 224x224
+  img.Image _convertCameraImage(CameraImage cameraImage) {
+    final int width = cameraImage.width;
+    final int height = cameraImage.height;
 
-      if (recognitions != null && recognitions.isNotEmpty) {
-        String rawLabel = recognitions[0]['label'].toString();
-        String label = rawLabel.replaceAll(RegExp(r'[0-9]'), '').trim();
-        double confidence = recognitions[0]['confidence'];
+    final yPlane = cameraImage.planes[0];
+    final uPlane = cameraImage.planes[1];
+    final vPlane = cameraImage.planes[2];
+
+    final image = img.Image(width: width, height: height);
+
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        final int yIndex = y * yPlane.bytesPerRow + x;
+        final int uvIndex = (y ~/ 2) * uPlane.bytesPerRow + (x ~/ 2);
+
+        final int yVal = yPlane.bytes[yIndex];
+        final int uVal = uPlane.bytes[uvIndex];
+        final int vVal = vPlane.bytes[uvIndex];
+
+        // YUV to RGB conversion
+        int r = (yVal + 1.370705 * (vVal - 128)).round().clamp(0, 255);
+        int g = (yVal - 0.337633 * (uVal - 128) - 0.698001 * (vVal - 128)).round().clamp(0, 255);
+        int b = (yVal + 1.732446 * (uVal - 128)).round().clamp(0, 255);
+
+        image.setPixelRgb(x, y, r, g, b);
+      }
+    }
+
+    // Rotate for front camera (typical Android sensor orientation)
+    final rotated = img.copyRotate(image, angle: -90);
+
+    // Resize to model input size
+    return img.copyResize(rotated, width: 224, height: 224);
+  }
+
+  /// Prepare input tensor from img.Image [1, 224, 224, 3] normalized to [-1, 1]
+  Float32List _imageToFloat32(img.Image image) {
+    final Float32List buffer = Float32List(1 * 224 * 224 * 3);
+    int index = 0;
+    for (int y = 0; y < 224; y++) {
+      for (int x = 0; x < 224; x++) {
+        final pixel = image.getPixel(x, y);
+        buffer[index++] = (pixel.r.toDouble() - 127.5) / 127.5;
+        buffer[index++] = (pixel.g.toDouble() - 127.5) / 127.5;
+        buffer[index++] = (pixel.b.toDouble() - 127.5) / 127.5;
+      }
+    }
+    return buffer;
+  }
+
+  Future<void> _runModelOnFrame(CameraImage cameraImage) async {
+    try {
+      if (_interpreter == null || _labels.isEmpty) return;
+
+      // Convert camera frame to model input
+      final image = _convertCameraImage(cameraImage);
+      final input = _imageToFloat32(image);
+
+      // Reshape input to [1, 224, 224, 3]
+      final inputTensor = input.reshape([1, 224, 224, 3]);
+
+      // Output: [1, numClasses]
+      final output = List.filled(1 * _labels.length, 0.0).reshape([1, _labels.length]);
+
+      _interpreter!.run(inputTensor, output);
+
+      // Find best prediction
+      final outputList = output[0] as List<double>;
+      double maxScore = 0;
+      int maxIndex = -1;
+      for (int i = 0; i < outputList.length; i++) {
+        if (outputList[i] > maxScore) {
+          maxScore = outputList[i];
+          maxIndex = i;
+        }
+      }
+
+      if (maxIndex >= 0 && maxIndex < _labels.length) {
+        String label = _labels[maxIndex];
+        double confidence = maxScore;
 
         state.detectedText = "$label ${(confidence * 100).toStringAsFixed(0)}%";
-        
         _processDetectionLogic(label, confidence);
       }
     } catch (e) {
-      print("Error running model: $e");
+      debugPrint("Error running model: $e");
     } finally {
       state.isBusy = false;
       notifyListeners();
     }
   }
 
-  // Save Detection Logic
   void _processDetectionLogic(String label, double confidence) {
     if (confidence > 0.5) {
       if (label == _lastDetectedLabel) {
@@ -125,7 +203,6 @@ class VideoController extends ChangeNotifier {
         _lastDetectedLabel = label;
       }
 
-      // Jika terdeteksi stabil 10 frame
       if (_consecutiveFrames > 10 && !state.isSaving) {
         if (label != _lastAddedChar) {
           _appendLetter(label);
@@ -165,7 +242,7 @@ class VideoController extends ChangeNotifier {
   void backspace() {
     if (state.sentenceBuffer.isNotEmpty) {
       state.sentenceBuffer = state.sentenceBuffer.substring(0, state.sentenceBuffer.length - 1);
-      _lastAddedChar = ""; // Reset State setelah Save
+      _lastAddedChar = "";
       notifyListeners();
     }
   }
@@ -210,7 +287,7 @@ class VideoController extends ChangeNotifier {
   }
 
   void disposeController() {
-    Tflite.close();
+    _interpreter?.close();
     cameraController?.dispose();
     super.dispose();
   }
