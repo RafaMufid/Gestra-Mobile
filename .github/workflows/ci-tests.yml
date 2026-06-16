@@ -26,7 +26,11 @@ jobs:
           channel: 'stable'
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          cd gestra
+          flutter pub get
 
       - name: Run tests
-        run: flutter test --no-color
+        run: |
+          cd gestra
+          flutter test --no-color
