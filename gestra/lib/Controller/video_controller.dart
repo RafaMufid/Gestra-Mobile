@@ -12,15 +12,15 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 class VideoController extends ChangeNotifier {
   VideoPageState state = VideoPageState();
-  
+
   CameraController? cameraController;
   final AuthService _authService = AuthService();
 
   FlutterTts flutterTts = FlutterTts();
-  
+
   Interpreter? _interpreter;
   List<String> _labels = [];
-  
+
   String _lastDetectedLabel = "";
   int _consecutiveFrames = 0;
   bool _isModelLoaded = false;
@@ -52,7 +52,9 @@ class VideoController extends ChangeNotifier {
 
   Future<void> _loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('model_sibi.tflite');
+      final byteData = await rootBundle.load('assets/model_sibi.tflite');
+      final buffer = byteData.buffer.asUint8List();
+      _interpreter = Interpreter.fromBuffer(buffer);
       _isModelLoaded = true;
       debugPrint("Model loaded successfully");
     } catch (e) {
@@ -68,7 +70,10 @@ class VideoController extends ChangeNotifier {
   Future<void> _loadLabels() async {
     try {
       final labelData = await rootBundle.loadString('assets/labels.txt');
-      _labels = labelData.split('\n').where((l) => l.trim().isNotEmpty).toList();
+      _labels = labelData
+          .split('\n')
+          .where((l) => l.trim().isNotEmpty)
+          .toList();
       debugPrint("Labels loaded: ${_labels.length} classes");
     } catch (e) {
       debugPrint("Error loading labels: $e");
@@ -123,7 +128,9 @@ class VideoController extends ChangeNotifier {
 
         // YUV to RGB conversion
         int r = (yVal + 1.370705 * (vVal - 128)).round().clamp(0, 255);
-        int g = (yVal - 0.337633 * (uVal - 128) - 0.698001 * (vVal - 128)).round().clamp(0, 255);
+        int g = (yVal - 0.337633 * (uVal - 128) - 0.698001 * (vVal - 128))
+            .round()
+            .clamp(0, 255);
         int b = (yVal + 1.732446 * (uVal - 128)).round().clamp(0, 255);
 
         image.setPixelRgb(x, y, r, g, b);
@@ -164,7 +171,10 @@ class VideoController extends ChangeNotifier {
       final inputTensor = input.reshape([1, 224, 224, 3]);
 
       // Output: [1, numClasses]
-      final output = List.filled(1 * _labels.length, 0.0).reshape([1, _labels.length]);
+      final output = List.filled(
+        1 * _labels.length,
+        0.0,
+      ).reshape([1, _labels.length]);
 
       _interpreter!.run(inputTensor, output);
 
@@ -241,14 +251,18 @@ class VideoController extends ChangeNotifier {
 
   void backspace() {
     if (state.sentenceBuffer.isNotEmpty) {
-      state.sentenceBuffer = state.sentenceBuffer.substring(0, state.sentenceBuffer.length - 1);
+      state.sentenceBuffer = state.sentenceBuffer.substring(
+        0,
+        state.sentenceBuffer.length - 1,
+      );
       _lastAddedChar = "";
       notifyListeners();
     }
   }
 
   void addSpace() {
-    if (state.sentenceBuffer.isNotEmpty && !state.sentenceBuffer.endsWith(" ")) {
+    if (state.sentenceBuffer.isNotEmpty &&
+        !state.sentenceBuffer.endsWith(" ")) {
       state.sentenceBuffer += " ";
       _lastAddedChar = "";
       notifyListeners();
@@ -271,8 +285,12 @@ class VideoController extends ChangeNotifier {
     final token = prefs.getString('token');
 
     if (token != null) {
-      bool success = await _authService.saveHistory(token, state.sentenceBuffer, 1.0);
-      
+      bool success = await _authService.saveHistory(
+        token,
+        state.sentenceBuffer,
+        1.0,
+      );
+
       if (success && onShowMessage != null) {
         onShowMessage!("Kalimat disimpan!", false);
         state.sentenceBuffer = "";
@@ -281,7 +299,7 @@ class VideoController extends ChangeNotifier {
         onShowMessage!("Gagal menyimpan.", true);
       }
     }
-    
+
     state.isSaving = false;
     notifyListeners();
   }
