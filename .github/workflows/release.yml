@@ -1,6 +1,6 @@
 name: Build & Release APK
 
-on: 
+on:
   push:
     tags:
       - 'v*'
@@ -39,7 +39,7 @@ jobs:
         run: |
           flutter doctor -v
 
-      -name: Install TFLite Native libs
+      - name: Install TFLite native libs
         run: |
           cd gestra
           dart run tflite_flutter:install
