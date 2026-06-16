@@ -39,11 +39,6 @@ jobs:
         run: |
           flutter doctor -v
 
-      - name: Install TFLite native libs
-        run: |
-          cd gestra
-          dart run tflite_flutter:install
-
       - name: Build APK
         run: |
           cd gestra
